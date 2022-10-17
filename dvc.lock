@@ -9,7 +9,7 @@ stages:
     params:
       params.yaml:
         dataset_kwargs:
-          n_samples: 800
+          n_samples: 500
           n_features: 3
           n_classes: 3
           n_labels: 2
@@ -31,15 +31,15 @@ stages:
         - 9
     outs:
     - path: data/generated
-      md5: 2b703aa8425f77784374be76baddcdfe.dir
-      size: 546630
+      md5: 69e4e4f51b88dc760b16ce075563a7b1.dir
+      size: 346380
       nfiles: 10
   train:
     cmd: python src/models/train.py
     deps:
     - path: data/generated/
-      md5: 2b703aa8425f77784374be76baddcdfe.dir
-      size: 546630
+      md5: 69e4e4f51b88dc760b16ce075563a7b1.dir
+      size: 346380
       nfiles: 10
     - path: src/models/train.py
       md5: 94eeb70676decaa65cc8e8a72883788e
@@ -51,15 +51,15 @@ stages:
           seed: 0
     outs:
     - path: data/pred_probs/
-      md5: 02eaaabf39569753e77ba17f33aaef3c.dir
-      size: 145530
+      md5: 5f3f796b43e61ba6b419fcad501716e2.dir
+      size: 91530
       nfiles: 10
   score:
     cmd: python src/evaluation/score.py
     deps:
     - path: data/pred_probs/
-      md5: 02eaaabf39569753e77ba17f33aaef3c.dir
-      size: 145530
+      md5: 5f3f796b43e61ba6b419fcad501716e2.dir
+      size: 91530
       nfiles: 10
     - path: src/evaluation/
       md5: 17cb65d38a1cba1e145bd26bab68c7be.dir
@@ -92,8 +92,8 @@ stages:
           - 100
     outs:
     - path: data/scores/results.csv
-      md5: bff7d288fd6e33ade20a46250caba6e8
-      size: 1593346
+      md5: d735d71495d7a3b868410392f5b98a0b
+      size: 1014017
     - path: data/scores/results_agg.json
-      md5: 01d35dede040099ec7a92883065b6ff7
-      size: 7946
+      md5: b186a4c9f3a5c7397c75d8fe75c30958
+      size: 7941
