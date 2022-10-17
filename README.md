@@ -41,4 +41,5 @@ dvc repro
     - `results.csv`: All experimental results
     - `results_agg.json`: Overall stats for the different aggregator methods.
 
-4. Inspect the results in the `notebooks/inspect_score_results.ipynb` notebook.
+4. Inspect the synthetic datasets in the `notebooks/inspect_generated_data.ipynb` notebook.
+5. Inspect the results in the `notebooks/inspect_score_results.ipynb` notebook.
