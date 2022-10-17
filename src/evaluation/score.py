@@ -199,8 +199,9 @@ def main():
         
     # with open(SCORE_DIR / "results_agg.json", "w") as f:
     #     json.dump(results, f, indent=4)
+    df_agg.index = df_agg.index.map(lambda x: x[0] + x[1])
 
-    df_agg.to_json(SCORE_DIR / "results_agg.json", orient="split", indent=4)
+    df_agg.to_json(SCORE_DIR / "results_agg.json", indent=4)
 
 
 if __name__ == "__main__":

@@ -27,4 +27,5 @@ stages:
     outs:
     - data/scores/results.csv
     metrics:
-    - data/scores/results_agg.json
+    - data/scores/results_agg.json:
+        cache: false

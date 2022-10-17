@@ -1,7 +1,7 @@
 seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 dataset_kwargs:
-  n_samples: 500
+  n_samples: 600
   n_features: 3
   n_classes: 3
   n_labels: 2

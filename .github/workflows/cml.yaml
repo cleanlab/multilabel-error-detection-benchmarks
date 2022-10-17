@@ -1,0 +1,35 @@
+name: run-dvc-pipeline
+ 
+on: [push]
+ 
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+ 
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+ 
+      - uses: iterative/setup-cml@v1
+
+      - uses: iterative/setup-dvc@v1
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+ 
+      - name: cml
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip3 install -r requirements.txt
+          dvc repro
+
+          echo "## Parameters" >> report.md
+          dvc params diff master --show-md >> report.md
+
+          echo "## Metrics" >> report.md
+          dvc metrics diff master --show-md >> report.md
+ 
+          cml comment create --publish report.md
