@@ -1,0 +1,30 @@
+stages:
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+    - src/data/make_dataset.py
+    params:
+    - dataset_kwargs
+    - seeds
+    outs:
+    - data/generated
+  train:
+    cmd: python src/models/train.py
+    deps:
+    - data/generated/
+    - src/models/train.py
+    params:
+    - train
+    outs:
+    - data/pred_probs/
+  score:
+    cmd: python src/evaluation/score.py
+    deps:
+    - data/pred_probs/
+    - src/evaluation/
+    params:
+    - eval
+    outs:
+    - data/scores/results.csv
+    metrics:
+    - data/scores/results_agg.json

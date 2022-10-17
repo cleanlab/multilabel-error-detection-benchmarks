@@ -1,0 +1,13 @@
+# local package
+-e .
+
+# external requirements
+git+https://github.com/cleanlab/cleanlab.git
+dvc
+flake8
+numpy
+sklearn
+ipykernel
+matplotlib
+pandas
+seaborn
