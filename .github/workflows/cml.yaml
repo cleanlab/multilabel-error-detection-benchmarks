@@ -26,6 +26,8 @@ jobs:
           pip3 install -r requirements.txt
           dvc repro
 
+          # Compare metrics to main
+          git fetch --prune
           echo "## Parameters" >> report.md
           dvc params diff main --show-md >> report.md
 
