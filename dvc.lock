@@ -4,8 +4,8 @@ stages:
     cmd: python src/data/make_dataset.py
     deps:
     - path: src/data/make_dataset.py
-      md5: d2afc134bd6cc5723255f475913ea65b
-      size: 6438
+      md5: ae51d2c9de30dfb57b768caf8568048b
+      size: 6379
     params:
       params.yaml:
         dataset_kwargs:
@@ -23,10 +23,10 @@ stages:
               shape: 2.0
               scale: 0.01
           large:
-            n_samples: 25000
-            n_features: 10
-            n_classes: 24
-            n_labels: 3
+            n_samples: 30000
+            n_features: 20
+            n_classes: 50
+            n_labels: 5
             length: 500
             allow_unlabeled: true
             sparse: false
@@ -48,15 +48,15 @@ stages:
         - 9
     outs:
     - path: data/generated
-      md5: 1d7d48d11c47b44f3b975f437a73b47c.dir
-      size: 120147164
+      md5: e9f134937269f5e2f3465e8b6dbe5387.dir
+      size: 291120772
       nfiles: 20
   train:
     cmd: python src/models/train.py
     deps:
     - path: data/generated/
-      md5: 1d7d48d11c47b44f3b975f437a73b47c.dir
-      size: 120147164
+      md5: e9f134937269f5e2f3465e8b6dbe5387.dir
+      size: 291120772
       nfiles: 20
     - path: src/models/train.py
       md5: 905c671b9391367bcd8c0bd7e3f5db5c
@@ -68,19 +68,19 @@ stages:
           seed: 0
     outs:
     - path: data/pred_probs/
-      md5: 3a0f2cf81ce130195347b0b3b4aa7e21.dir
-      size: 47123240
+      md5: 69ee45f9e10c9d1b7bbfbe076ec69377.dir
+      size: 115523240
       nfiles: 20
   score:
     cmd: python src/evaluation/score.py
     deps:
     - path: data/pred_probs/
-      md5: 3a0f2cf81ce130195347b0b3b4aa7e21.dir
-      size: 47123240
+      md5: 69ee45f9e10c9d1b7bbfbe076ec69377.dir
+      size: 115523240
       nfiles: 20
     - path: src/evaluation/
-      md5: d5e91ef063aa58e7340f82bab28f3273.dir
-      size: 20725
+      md5: dfcbe3e2a572090b00cf56745e688bce.dir
+      size: 21335
       nfiles: 6
     params:
       params.yaml:
@@ -109,8 +109,8 @@ stages:
           - 0.8
     outs:
     - path: data/scores/results.csv
-      md5: aa300f3197f9d80437c2a4031630b9a5
-      size: 295526
+      md5: a450f7da9e71ea8e9c903e145868a15a
+      size: 317309
     - path: data/scores/results_agg.json
-      md5: 3c4912b6dffbe049f1c0fcb97ecf422a
-      size: 11302
+      md5: daa88664a0561d00eaf65dbe6caf96d5
+      size: 11847

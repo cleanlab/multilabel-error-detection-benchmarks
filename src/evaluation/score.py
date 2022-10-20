@@ -8,6 +8,7 @@ from functools import partial
 from sklearn.metrics import average_precision_score, roc_auc_score 
 import yaml
 from collections import defaultdict
+from scipy import stats
 from tqdm import tqdm
 
 from src.evaluation.aggregate import (
@@ -102,6 +103,7 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
     
     num_examples, num_classes = labels.shape
     num_errors = np.sum(label_errors_mask)
+    num_errors_per_example = np.sum(dataset["true_labels_train"] != labels, axis=1)
     num_two_label_errors = np.sum(two_label_errors_mask)
     num_three_label_errors = np.sum(three_label_errors_mask)
     num_unique_labels = dataset["m"]
@@ -142,29 +144,44 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
             [num_errors, num_two_label_errors, num_three_label_errors],
 
         ):
+            update_experiment_metrics(
+                experiment=experiment,
+                scores=inv_scores,
+                mask=mask,
+                suffix=mask_name_suffix,
+                k=k
+            )
 
-
-            auroc = roc_auc_score(mask, inv_scores)
-            lift_at_100 = lift_at_k(mask, inv_scores, k=100)
-            lift_at_num_errors = lift_at_k(mask, inv_scores, k=k)
-            auprc = average_precision_score(mask, inv_scores)
-            ap_at_100 = average_precision_at_k(mask, inv_scores, k=100)
-            ap_at_num_errors = average_precision_at_k(mask, inv_scores, k=k)
-
-            experiment.update({
-                f"auroc{mask_name_suffix}": auroc,
-                f"lift_at_100{mask_name_suffix}": lift_at_100,
-                f"lift_at_num_errors{mask_name_suffix}": lift_at_num_errors,
-                f"auprc{mask_name_suffix}": auprc,
-                f"ap_at_100{mask_name_suffix}": ap_at_100,
-                f"ap_at_num_errors{mask_name_suffix}": ap_at_num_errors,
-            })
-
+        spearman = stats.spearmanr(inv_scores, num_errors_per_example)[0]
         experiment.update({
+            "spearman": spearman,
             "scores": scores,
         })        
         experiments.append(experiment)
     return experiments
+
+def update_experiment_metrics(experiment: dict, scores:np.ndarray, mask: np.ndarray, suffix: str, k: int):
+    if len(suffix) > 0:
+        assert suffix.startswith("_"), "suffix must start with an underscore to be appended to metric names"
+    assert scores.shape == mask.shape, "scores and mask must have the same shape"
+    assert k <= scores.shape[0], "k must be less than or equal to the number of examples"
+
+    auroc = roc_auc_score(mask, scores)
+    lift_at_100 = lift_at_k(mask, scores, k=100)
+    lift_at_num_errors = lift_at_k(mask, scores, k=k)
+    auprc = average_precision_score(mask, scores)
+    ap_at_100 = average_precision_at_k(mask, scores, k=100)
+    ap_at_num_errors = average_precision_at_k(mask, scores, k=k)
+    # Spearman's rank correlation between the ranking of the quality scores and the 
+
+    experiment.update({
+        f"auroc{suffix}": auroc,
+        f"lift_at_100{suffix}": lift_at_100,
+        f"lift_at_num_errors{suffix}": lift_at_num_errors,
+        f"auprc{suffix}": auprc,
+        f"ap_at_100{suffix}": ap_at_100,
+        f"ap_at_num_errors{suffix}": ap_at_num_errors,
+    })
 
 def run_all_experiments(*, aggregator_params: dict):
 
