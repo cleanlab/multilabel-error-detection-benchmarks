@@ -9,20 +9,51 @@ seeds:
 - 7
 - 8
 - 9
+
+
 dataset_kwargs:
-  n_samples: 500
-  n_features: 3
-  n_classes: 3
-  n_labels: 2
-  length: 500
-  allow_unlabeled: true
-  sparse: false
-  test_size: 0.25
-  avg_trace: 0.65
+  small:
+    n_samples: 5000
+    n_features: 3
+    n_classes: 4
+    n_labels: 2
+    length: 500
+    allow_unlabeled: true
+    sparse: false
+    test_size: 0.05
+    avg_trace: 0.925
+    gamma: # This will be popped out of the params dict
+      shape: 2.0
+      scale: 0.01
+  large:
+    n_samples: 25000
+    n_features: 10
+    n_classes: 24
+    n_labels: 3
+    length: 500
+    allow_unlabeled: true
+    sparse: false
+    test_size: 0.05
+    avg_trace: 0.995
+    gamma: # This will be popped out of the params dict
+      shape: 2.0
+      scale: 0.01
+
+gaussian:
+  small:
+    k: 3
+    n: 2
+    N_means: 8
+  large:
+    k: 50
+    n: 10
+    N_means: 20
+
 
 train:
   cv_n_folds: 5
   seed: 0
+  # ADD MODEL
 
 eval:
   ks:
@@ -42,8 +73,8 @@ eval:
   - 10
   - 100
   alphas:
-  - 0.01
-  - 0.1
-  - 1
-  - 10
-  - 100
+  - 0.2
+  - 0.4
+  - 0.5
+  - 0.6
+  - 0.8

@@ -43,3 +43,14 @@ dvc repro
 
 4. Inspect the synthetic datasets in the `notebooks/inspect_generated_data.ipynb` notebook.
 5. Inspect the results in the `notebooks/inspect_score_results.ipynb` notebook.
+
+## Aggregator methods
+
+Along with the typical `np.mean`, `np.median`, `np.min`, `np.max` aggregators, we also implement several methods found in `src/evaluation/aggregate.py`:
+
+- `softmin_pooling`
+- `log_transform_pooling`
+- `cumulative_average`
+- `simple_moving_average`
+- `exponential_moving_average`
+- `weighted_cumulative_average`

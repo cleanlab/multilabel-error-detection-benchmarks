@@ -84,7 +84,7 @@ if __name__ == "__main__":
     for dataset_file in tqdm(dataset_files):
         dataset = pickle.load(open(dataset_file, "rb"))
         # Unpack the dataset
-        X_train, true_labels_train, X_test, true_labels_test, labels, label_errors_mask, ps, py, noise_matrix, m, n = [
+        X_train, true_labels_train, X_test, true_labels_test, labels, label_errors_mask, multiple_errors_mask_dict, ps, py, noise_matrix, m, n = [
             dataset[k] for k in dataset.keys()
         ]
 

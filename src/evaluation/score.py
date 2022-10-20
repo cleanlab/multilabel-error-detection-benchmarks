@@ -1,3 +1,4 @@
+from typing import Optional
 from cleanlab.internal.multilabel_utils import ClassLabelScorer, MultilabelScorer
 import numpy as np
 import pandas as pd
@@ -6,8 +7,8 @@ import pickle
 from functools import partial
 from sklearn.metrics import average_precision_score, roc_auc_score 
 import yaml
-import json
 from collections import defaultdict
+from tqdm import tqdm
 
 from src.evaluation.aggregate import (
     softmin_pooling,
@@ -24,14 +25,23 @@ PRED_PROBS_DIR = pathlib.Path("data/pred_probs")
 SCORE_DIR = pathlib.Path("data/scores")
 
 
-def configure_aggregators(labels, *, temperatures: list, ks: list, alphas: list):
+def configure_aggregators(
+    labels,
+    *,
+    temperatures: Optional[list] = None,
+    ks: Optional[list] = None,
+    alphas: Optional[list] = None,
+):
     """Configure the aggregators for the MultilabelScorer."""
 
     _, K = labels.shape
 
-    temperatures = [0.01, 0.1, 1, 10, 100]
-    ks = [1, 2, 3, 4, 5, 10, 20, 50, 100]
-    alphas = [0.2, 0.4, 0.5, 0.6, 0.8]
+    if temperatures is None:
+        temperatures = [0.01, 0.1, 1, 10, 100]
+    if ks is None:
+        ks = [1, 2, 3, 4, 5, 10, 20, 50, 100]
+    if alphas is None:
+        alphas = [0.2, 0.4, 0.5, 0.6, 0.8]
 
     numpy_stats = [np.mean, np.median, np.max, np.min]
 
@@ -86,8 +96,14 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
     dataset_name = dataset_file.name
     labels = dataset["labels"]
     label_errors_mask = dataset["label_errors_mask"]
+    multiple_errors_mask_dict = dataset["multiple_errors_mask_dict"]
+    two_label_errors_mask = multiple_errors_mask_dict[1]
+    three_label_errors_mask = multiple_errors_mask_dict[2]
+    
     num_examples, num_classes = labels.shape
     num_errors = np.sum(label_errors_mask)
+    num_two_label_errors = np.sum(two_label_errors_mask)
+    num_three_label_errors = np.sum(three_label_errors_mask)
     num_unique_labels = dataset["m"]
     pred_probs = pickle.load(open(pred_probs_file, "rb"))
     
@@ -99,15 +115,9 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
     ]
 
     experiments = []
-    for exp_id, scorer in enumerate(scorers):
+    for exp_id, scorer in tqdm(enumerate(scorers)):
         scores = scorer(labels, pred_probs)
         inv_scores = 1 - scores
-        auroc = roc_auc_score(label_errors_mask, inv_scores)
-        lift_at_100 = lift_at_k(label_errors_mask, inv_scores, k=100)
-        lift_at_num_errors = lift_at_k(label_errors_mask, inv_scores, k=num_errors)
-        auprc = average_precision_score(label_errors_mask, inv_scores)
-        ap_at_100 = average_precision_at_k(label_errors_mask, inv_scores, k=100)
-        ap_at_num_errors = average_precision_at_k(label_errors_mask, inv_scores, k=num_errors)
 
         experiment = {
             "exp_id": exp_id,
@@ -116,6 +126,8 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
             "num_classes": num_classes,
             "num_unique_labels": num_unique_labels,
             "num_errors": num_errors,
+            "num_two_label_errors": np.sum(two_label_errors_mask),
+            "num_three_label_errors": np.sum(three_label_errors_mask),
             "class_label_scorer": scorer.base_scorer,
             "aggregator": scorer.aggregator.func.__name__ if hasattr(scorer.aggregator, "func") else scorer.aggregator.__qualname__,
             "aggregator_kwargs": str(
@@ -123,15 +135,34 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
                 if hasattr(scorer.aggregator, "keywords")
                 else {}
             ),
-            "auroc": auroc,
-            "lift_at_100": lift_at_100,
-            "lift_at_num_errors": lift_at_num_errors,
-            "auprc": auprc,
-            "ap_at_100": ap_at_100,
-            "ap_at_num_errors": ap_at_num_errors,
-            "scores": scores,
         }
-        
+        for mask_name_suffix, mask, k in zip(
+            ["", "_two", "_three"],
+            [label_errors_mask, two_label_errors_mask, three_label_errors_mask],
+            [num_errors, num_two_label_errors, num_three_label_errors],
+
+        ):
+
+
+            auroc = roc_auc_score(mask, inv_scores)
+            lift_at_100 = lift_at_k(mask, inv_scores, k=100)
+            lift_at_num_errors = lift_at_k(mask, inv_scores, k=k)
+            auprc = average_precision_score(mask, inv_scores)
+            ap_at_100 = average_precision_at_k(mask, inv_scores, k=100)
+            ap_at_num_errors = average_precision_at_k(mask, inv_scores, k=k)
+
+            experiment.update({
+                f"auroc{mask_name_suffix}": auroc,
+                f"lift_at_100{mask_name_suffix}": lift_at_100,
+                f"lift_at_num_errors{mask_name_suffix}": lift_at_num_errors,
+                f"auprc{mask_name_suffix}": auprc,
+                f"ap_at_100{mask_name_suffix}": ap_at_100,
+                f"ap_at_num_errors{mask_name_suffix}": ap_at_num_errors,
+            })
+
+        experiment.update({
+            "scores": scores,
+        })        
         experiments.append(experiment)
     return experiments
 
@@ -151,7 +182,7 @@ def run_all_experiments(*, aggregator_params: dict):
     dataset_pred_probs_pairs.sort(key=lambda x: x[0].stem)
 
     all_experiments = []
-    for dataset_file, pred_probs_file in dataset_pred_probs_pairs:
+    for dataset_file, pred_probs_file in tqdm(dataset_pred_probs_pairs):
         experiments = run_experiments(
             dataset_file,
             pred_probs_file,
@@ -196,9 +227,6 @@ def main():
                     nested[k] = v
                 else:
                     nested = nested[k]
-        
-    # with open(SCORE_DIR / "results_agg.json", "w") as f:
-    #     json.dump(results, f, indent=4)
     df_agg.index = df_agg.index.map(lambda x: x[0] + x[1])
 
     df_agg.to_json(SCORE_DIR / "results_agg.json", indent=4)

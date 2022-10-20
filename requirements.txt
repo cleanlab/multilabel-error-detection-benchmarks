@@ -10,4 +10,5 @@ sklearn
 ipykernel
 matplotlib
 pandas
+plotly
 seaborn
