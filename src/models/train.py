@@ -17,6 +17,7 @@ import cleanlab.internal.multilabel_utils as mlutils
 import sklearn
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 DATA_DIR = pathlib.Path("data/generated")
 OUTPUT_DIR = pathlib.Path("data/pred_probs")
@@ -74,7 +75,9 @@ if __name__ == "__main__":
     dataset_files = list(DATA_DIR.glob("*.pkl"))
     dataset_files.sort()
 
-    clf = OneVsRestClassifier(LogisticRegression(random_state=seed))
+    clf_log_reg = OneVsRestClassifier(LogisticRegression(random_state=seed), n_jobs=-1)
+    clf_rf = OneVsRestClassifier(RandomForestClassifier(random_state=seed), n_jobs=-1)
+
     kf = sklearn.model_selection.StratifiedKFold(
         n_splits=cv_n_folds,
         shuffle=True,
@@ -88,12 +91,11 @@ if __name__ == "__main__":
             dataset[k] for k in dataset.keys()
         ]
 
-        # Get the predicted probabilities
-        pred_probs = mlutils.get_cross_validated_multilabel_pred_probs(X_train, labels, clf=clf, cv=kf)
+        pred_probs_dict = {}
+        for clf_name, clf in [("log_reg", clf_log_reg), ("rf", clf_rf)]: 
+            pred_probs = mlutils.get_cross_validated_multilabel_pred_probs(X_train, labels, clf=clf, cv=kf)
+            pred_probs_dict[clf_name] = pred_probs
 
         # Save the predicted probabilities
         output_file = OUTPUT_DIR / dataset_file.name
-        pickle.dump(pred_probs, open(output_file, "wb"))
-
-
-
+        pickle.dump(pred_probs_dict, open(output_file, "wb"))

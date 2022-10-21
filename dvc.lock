@@ -59,8 +59,8 @@ stages:
       size: 291120772
       nfiles: 20
     - path: src/models/train.py
-      md5: 905c671b9391367bcd8c0bd7e3f5db5c
-      size: 3277
+      md5: 20d4df4287f6aad6150ec40f21ecf87f
+      size: 3554
     params:
       params.yaml:
         train:
@@ -68,19 +68,19 @@ stages:
           seed: 0
     outs:
     - path: data/pred_probs/
-      md5: 69ee45f9e10c9d1b7bbfbe076ec69377.dir
-      size: 115523240
+      md5: a8b17b83be8c08599725581079abbc23.dir
+      size: 231044520
       nfiles: 20
   score:
     cmd: python src/evaluation/score.py
     deps:
     - path: data/pred_probs/
-      md5: 69ee45f9e10c9d1b7bbfbe076ec69377.dir
-      size: 115523240
+      md5: a8b17b83be8c08599725581079abbc23.dir
+      size: 231044520
       nfiles: 20
     - path: src/evaluation/
-      md5: dfcbe3e2a572090b00cf56745e688bce.dir
-      size: 21335
+      md5: eb755deb6cd525e79245d8b6e321a608.dir
+      size: 21593
       nfiles: 6
     params:
       params.yaml:
@@ -109,8 +109,8 @@ stages:
           - 0.8
     outs:
     - path: data/scores/results.csv
-      md5: a450f7da9e71ea8e9c903e145868a15a
-      size: 317309
+      md5: 0d5c8062d18646f90aa0eccf56c629a5
+      size: 632707
     - path: data/scores/results_agg.json
-      md5: daa88664a0561d00eaf65dbe6caf96d5
-      size: 11847
+      md5: b9c8db6b63a6e37eb19a9ef67d4df2aa
+      size: 11858

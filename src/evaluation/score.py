@@ -107,7 +107,7 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
     num_two_label_errors = np.sum(two_label_errors_mask)
     num_three_label_errors = np.sum(three_label_errors_mask)
     num_unique_labels = dataset["m"]
-    pred_probs = pickle.load(open(pred_probs_file, "rb"))
+    pred_probs_dict = pickle.load(open(pred_probs_file, "rb"))
     
     aggregators = configure_aggregators(labels, **aggregator_params)
 
@@ -118,46 +118,48 @@ def run_experiments(dataset_file, pred_probs_file, *, aggregator_params: dict):
 
     experiments = []
     for exp_id, scorer in tqdm(enumerate(scorers)):
-        scores = scorer(labels, pred_probs)
-        inv_scores = 1 - scores
+        for model_name, pred_probs in pred_probs_dict.items():
+            scores = scorer(labels, pred_probs)
+            inv_scores = 1 - scores
 
-        experiment = {
-            "exp_id": exp_id,
-            "dataset_name": dataset_name,
-            "num_examples": num_examples,
-            "num_classes": num_classes,
-            "num_unique_labels": num_unique_labels,
-            "num_errors": num_errors,
-            "num_two_label_errors": np.sum(two_label_errors_mask),
-            "num_three_label_errors": np.sum(three_label_errors_mask),
-            "class_label_scorer": scorer.base_scorer,
-            "aggregator": scorer.aggregator.func.__name__ if hasattr(scorer.aggregator, "func") else scorer.aggregator.__qualname__,
-            "aggregator_kwargs": str(
-                scorer.aggregator.keywords 
-                if hasattr(scorer.aggregator, "keywords")
-                else {}
-            ),
-        }
-        for mask_name_suffix, mask, k in zip(
-            ["", "_two", "_three"],
-            [label_errors_mask, two_label_errors_mask, three_label_errors_mask],
-            [num_errors, num_two_label_errors, num_three_label_errors],
+            experiment = {
+                "exp_id": exp_id,
+                "dataset_name": dataset_name,
+                "model_name": model_name,
+                "num_examples": num_examples,
+                "num_classes": num_classes,
+                "num_unique_labels": num_unique_labels,
+                "num_errors": num_errors,
+                "num_two_label_errors": np.sum(two_label_errors_mask),
+                "num_three_label_errors": np.sum(three_label_errors_mask),
+                "class_label_scorer": scorer.base_scorer,
+                "aggregator": scorer.aggregator.func.__name__ if hasattr(scorer.aggregator, "func") else scorer.aggregator.__qualname__,
+                "aggregator_kwargs": str(
+                    scorer.aggregator.keywords 
+                    if hasattr(scorer.aggregator, "keywords")
+                    else {}
+                ),
+            }
+            for mask_name_suffix, mask, k in zip(
+                ["", "_two", "_three"],
+                [label_errors_mask, two_label_errors_mask, three_label_errors_mask],
+                [num_errors, num_two_label_errors, num_three_label_errors],
 
-        ):
-            update_experiment_metrics(
-                experiment=experiment,
-                scores=inv_scores,
-                mask=mask,
-                suffix=mask_name_suffix,
-                k=k
-            )
+            ):
+                update_experiment_metrics(
+                    experiment=experiment,
+                    scores=inv_scores,
+                    mask=mask,
+                    suffix=mask_name_suffix,
+                    k=k
+                )
 
-        spearman = stats.spearmanr(inv_scores, num_errors_per_example)[0]
-        experiment.update({
-            "spearman": spearman,
-            "scores": scores,
-        })        
-        experiments.append(experiment)
+            spearman = stats.spearmanr(inv_scores, num_errors_per_example)[0]
+            experiment.update({
+                "spearman": spearman,
+                "scores": scores,
+            })        
+            experiments.append(experiment)
     return experiments
 
 def update_experiment_metrics(experiment: dict, scores:np.ndarray, mask: np.ndarray, suffix: str, k: int):
