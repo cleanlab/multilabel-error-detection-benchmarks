@@ -4,8 +4,8 @@ stages:
     cmd: python src/data/make_dataset.py
     deps:
     - path: src/data/make_dataset.py
-      md5: ae51d2c9de30dfb57b768caf8568048b
-      size: 6379
+      md5: 9d0e0a78b123e260ad6e55461a83497d
+      size: 10530
     params:
       params.yaml:
         dataset_kwargs:
@@ -48,19 +48,19 @@ stages:
         - 9
     outs:
     - path: data/generated
-      md5: e9f134937269f5e2f3465e8b6dbe5387.dir
-      size: 291120772
+      md5: 708906b9469fbda0a096531300f4bcbe.dir
+      size: 297352100
       nfiles: 20
   train:
     cmd: python src/models/train.py
     deps:
     - path: data/generated/
-      md5: e9f134937269f5e2f3465e8b6dbe5387.dir
-      size: 291120772
+      md5: 708906b9469fbda0a096531300f4bcbe.dir
+      size: 297352100
       nfiles: 20
     - path: src/models/train.py
-      md5: 20d4df4287f6aad6150ec40f21ecf87f
-      size: 3554
+      md5: 0ac3e2a1ae2cb87872d040343d77a7ca
+      size: 3632
     params:
       params.yaml:
         train:
@@ -68,19 +68,19 @@ stages:
           seed: 0
     outs:
     - path: data/pred_probs/
-      md5: a8b17b83be8c08599725581079abbc23.dir
+      md5: 9fff574b1c48079a0adf98228f92ffe1.dir
       size: 231044520
       nfiles: 20
   score:
     cmd: python src/evaluation/score.py
     deps:
     - path: data/pred_probs/
-      md5: a8b17b83be8c08599725581079abbc23.dir
+      md5: 9fff574b1c48079a0adf98228f92ffe1.dir
       size: 231044520
       nfiles: 20
     - path: src/evaluation/
-      md5: eb755deb6cd525e79245d8b6e321a608.dir
-      size: 21593
+      md5: 8a28da35c5c5ced1061413e3089c46a4.dir
+      size: 21579
       nfiles: 6
     params:
       params.yaml:
@@ -109,8 +109,23 @@ stages:
           - 0.8
     outs:
     - path: data/scores/results.csv
-      md5: 0d5c8062d18646f90aa0eccf56c629a5
-      size: 632707
+      md5: 7127e0e51a572a85ac35e321a40d6166
+      size: 632230
     - path: data/scores/results_agg.json
-      md5: b9c8db6b63a6e37eb19a9ef67d4df2aa
-      size: 11858
+      md5: 61a85fdc09062be8af39919d85dd0a8a
+      size: 11852
+  plot_avg_trace:
+    cmd: python src/data/plot_avg_trace.py
+    deps:
+    - path: src/data/plot_avg_trace.py
+      md5: 01dc511cf252de6b06535845d459bb5a
+      size: 1650
+    params:
+      params.yaml:
+        dataset_kwargs.small.gamma:
+          shape: 2.0
+          scale: 0.01
+    outs:
+    - path: data/images/avg_trace.svg
+      md5: f210c12bcaf6f2b786799a2cb9640cda
+      size: 25806

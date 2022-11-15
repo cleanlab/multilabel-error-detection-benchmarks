@@ -7,23 +7,25 @@ This script does the following:
 
 
 import pickle
-from typing import Optional
+from typing import Optional, Union
 import yaml
 import pathlib
 import numpy as np
 from sklearn.datasets import make_multilabel_classification
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from cleanlab.benchmarking.noise_generation import (
     generate_noise_matrix_from_trace,
     generate_noisy_labels,
 )
 
-import cleanlab.internal.multilabel_utils as mlutils
+from cleanlab.internal.multilabel_scorer import multilabel_py
 
 
 OUTPUT_DIR = pathlib.Path("data/generated")
+IMAGE_DIR = pathlib.Path("data/images/generated")
 
 def generate_noisy_dataset(
     *,
@@ -65,59 +67,33 @@ def generate_noisy_dataset(
     )
 
     # Compute p(true_label=k)
-    py = mlutils.multilabel_py(y_train)
+    py = multilabel_py(y_train)
 
-    m = py.shape[0]
-    trace = avg_trace * 2
-    noise_matrix = np.zeros(shape=(m, 2, 2))
-    for i, py_slice in enumerate(py):
-        if not isinstance(trace, float):
-            trace_i = trace[i]
-        else:
-            trace_i = trace
-        noise_matrix[i] = generate_noise_matrix_from_trace(
-            2,
-            trace=trace_i,
-            py=py_slice,
-            valid_noise_matrix=True,
-            seed=seed+i,
-        )
+    noise_array = create_noise_array(seed, py, avg_trace)  # 2x2 noise matrices for K classes in a (K, 2, 2) array
 
     # Map labels to to unique label indices
     label_to_index = {tuple(label): i for i, label in enumerate(unique_labels)}
     y_train_index = np.array([label_to_index[tuple(label)] for label in y_train])
+    y_test_index = np.array([label_to_index[tuple(label)] for label in y_test])
 
     # Generate our noisy labels using the noise_matrix for each class
-    y_train_noisy = np.copy(y_train)
-    y_train_noisy_T = y_train_noisy.T
+    y_train_noisy = create_noisy_labels(y_train, noise_array)
+    y_test_noisy = create_noisy_labels(y_test, noise_array)
 
-
-    # Only flip 3 labels at most
-    all_indices = np.arange(y_train_noisy.shape[0])
-    for i, noise_matrix_slice in enumerate(noise_matrix):
-        # Get indices of labels that are not already flipped more than 3 times
-        indices = np.intersect1d(
-            np.where(
-                np.sum(y_train_noisy != y_train, axis=1) < 3
-            )[0],
-            all_indices
-        )
-        if len(indices) == 0:
-            continue
-        y_train_noisy_T[i][indices] = generate_noisy_labels(
-            y_train_noisy_T[i][indices],
-            noise_matrix_slice,
-        )
-
-        # remaining_indices = np.setdiff1d(remaining_indices, indices)
-    y_train_noisy = y_train_noisy_T.T
-
+    m = py.shape[0]
     unique_noisy_labels = unique_labels
     if len(unique_labels) < 2**m and not np.all(
-        np.array([tuple(label) in label_to_index for label in y_train_noisy])
+        np.array([tuple(label) in label_to_index for label in [*y_train_noisy, *y_test_noisy]])
     ):
         # Update the label_to_index
-        unique_noisy_labels = np.unique(y_train_noisy, axis=0)
+        unique_noisy_labels = np.unique(
+            np.concatenate([
+                unique_labels, # Rare true labels could get removed, you wouldn't see them in practice
+                y_train_noisy, # Rare noisy labels could get generated
+                y_test_noisy, # Test-specific noisy labels could get generated
+            ], axis=0),
+            axis=0,
+        )
         # Get current number of unique labels
         n_unique_labels = len(label_to_index)
         for label in unique_noisy_labels:
@@ -125,16 +101,21 @@ def generate_noisy_dataset(
                 label_to_index[tuple(label)] = n_unique_labels
                 n_unique_labels += 1
     s_index =  np.array([label_to_index[tuple(label)] for label in y_train_noisy])
+    s_test_index =  np.array([label_to_index[tuple(label)] for label in y_test_noisy])
     ps = np.bincount(s_index) / float(len(s_index))
     index_to_label = {i: label for label, i in label_to_index.items()}
     s = np.array([index_to_label[i] for i in s_index])
 
 
-    # pred_probs = get_pred_probs(seed, cv_n_folds, X_train, s)
 
     label_errors_mask = s_index != y_train_index
+    test_label_errors_mask = s_test_index != y_test_index
     multiple_errors_mask_dict = {
         i: np.sum(y_train != y_train_noisy, axis=1) > i
+        for i in range(1, 4)
+    }
+    test_multiple_errors_mask_dict = {
+        i: np.sum(y_test != y_test_noisy, axis=1) > i
         for i in range(1, 4)
     }
 
@@ -144,24 +125,125 @@ def generate_noisy_dataset(
         "X_test": X_test,
         "true_labels_test": y_test,
         "labels": s,
+        "noisy_test_labels": y_test_noisy,
         "label_errors_mask": label_errors_mask,
+        "test_label_errors_mask": test_label_errors_mask,
         "multiple_errors_mask_dict": multiple_errors_mask_dict,
+        "test_multiple_errors_mask_dict": test_multiple_errors_mask_dict,
         "ps": ps,
         "py": py,
-        "noise_matrix": noise_matrix,
+        "noise_matrix": noise_array,
         "m": m,
         "n": X.shape[0],
     }
 
+def create_noisy_labels(y_true, noise_array):
+    y_noisy = np.copy(y_true)
+    y_noisy_T = y_noisy.T
+
+    # Only flip 3 labels at most
+    all_indices = np.arange(y_noisy.shape[0])
+    for i, noise_matrix_slice in enumerate(noise_array):
+        # Get indices of labels that are not already flipped more than 3 times
+        indices = np.intersect1d(
+            np.where(
+                np.sum(y_noisy != y_true, axis=1) < 3
+            )[0],
+            all_indices
+        )
+        if len(indices) == 0:
+            continue
+        y_noisy_T[i][indices] = generate_noisy_labels(
+            y_noisy_T[i][indices],
+            noise_matrix_slice,
+        )
+
+    y_noisy = y_noisy_T.T
+    return y_noisy
+
+def create_noise_array(seed:int, py:np.ndarray, avg_trace: Union[float, np.ndarray]):
+    m = py.shape[0]
+    avg_traces = np.full(m, avg_trace) if isinstance(avg_trace, float) else avg_trace
+    noise_array = np.zeros(shape=(m, 2, 2))
+    for i, (py_slice, avg_trace) in enumerate(zip(py, avg_traces)):
+        trace = 2*avg_trace
+        noise_array[i] = generate_noise_matrix_from_trace(
+            2,
+            trace=trace,
+            py=py_slice,
+            valid_noise_matrix=True,
+            seed=seed+i,
+        )
+        
+    return noise_array
+
+
+def plot_dataset(*, dataset):
+    def get_plot_args(dataset):
+
+        X, true_labels_train, X_test, true_labels_test, labels, noisy_test_labels, label_errors_mask, test_label_errors_mask, multiple_errors_mask_dict, test_multiple_errors_mask_dict, ps, py, noise_matrix, m, n = (
+            dataset[key] for key in dataset.keys()
+        )
+        return X, true_labels_train, X_test, true_labels_test, labels, noisy_test_labels, label_errors_mask, test_label_errors_mask, multiple_errors_mask_dict, test_multiple_errors_mask_dict, ps, py, noise_matrix, m, n
+    
+    X, true_labels_train, X_test, true_labels_test, labels, noisy_test_labels, label_errors_mask, test_label_errors_mask, multiple_errors_mask_dict, test_multiple_errors_mask_dict, ps, py, noise_matrix, m, n = get_plot_args(dataset)
+
+    # Binarized labels to unique label indices
+    unique_labels = np.unique(np.concatenate([true_labels_train, true_labels_test, labels]), axis=0)
+    label_to_index = {tuple(label): i for i, label in enumerate(unique_labels)}
+    
+    # Plot the features with and without label noise
+    x_axis, y_axis = 0, 1
+
+    fig, ax = plt.subplots(1, 3, figsize=(16, 10), dpi=200)
+    # Get mean class-wise label error rate 
+    label_error_rates = true_labels_train != labels
+    label_error_rates = np.sum(label_error_rates, axis=1) / true_labels_train.shape[1]
+    mean_label_error_rate = np.mean(label_error_rates)
+
+    # First plot the noisy labels with c=[label_to_index[tuple(label)] for label in labels]
+    # Title: "Features with label noise"
+    ax[0].scatter(X[:, x_axis], X[:, y_axis], c=[label_to_index[tuple(label)] for label in labels])
+    # Annotated with the mean label error rate
+    ax[0].annotate(f"Mean label error rate: {mean_label_error_rate:.2f}", xycoords='axes fraction', xy=(0.45, 0.95))
+    ax[0].set_title("Features with label noise")
+
+    # Second plot the true labels with c=[label_to_index[tuple(label)] for label in true_labels_train]
+    ax[1].scatter(X[:, x_axis], X[:, y_axis], c=[label_to_index[tuple(label)] for label in true_labels_train])
+    ax[1].set_title("Features without label noise")
+
+
+    overall_label_error_rate = np.any(true_labels_train != labels, axis=1).mean()
+    # Get overall label error rate
+    # Third plot the label error mask with c=label_errors_mask
+    ax[2].scatter(X[:, x_axis], X[:, y_axis], c=label_errors_mask)
+    # Annotated with the overall label error rate
+    ax[2].annotate(f"Total label error rate: {overall_label_error_rate:.2f}", xycoords='axes fraction', xy=(0.5, 0.95))
+    ax[2].set_title("Label error mask")
+
+    return fig, ax
+
+
 
 def make_dataset(*, seed: int, dataset_kwargs: dict, output_dir: str, dataset_name: Optional[str] = None):
     dataset = generate_noisy_dataset(**{**dataset_kwargs, "seed": seed})
+    fig, ax = plot_dataset(dataset=dataset)
     # Pad seed to 4 digits
     if dataset_name is None:
         dataset_name = f"dataset_{str(seed).zfill(4)}"
     pickle_file = pathlib.Path(output_dir) / f"{dataset_name}.pkl"
     with open(pickle_file, "wb") as f:
         pickle.dump(dataset, f)
+    
+    image_name = f"{dataset_name}.png"
+    image_file = IMAGE_DIR / image_name
+    # Save the figure in the image directory
+    # make sure the directory exists
+    pathlib.Path(IMAGE_DIR).mkdir(parents=True, exist_ok=True)
+    fig.savefig(image_file, bbox_inches="tight", dpi=200)
+
+
+
 
 
 
@@ -190,7 +272,8 @@ if __name__ == "__main__":
             # Generate avg_trace per class from gamma distribution
             K=kwargs["n_classes"]
             avg_traces = 1 - np.random.gamma(shape, scale, size=K)
-            avg_traces *= (1 - (np.exp(-np.arange(K)**2/K+np.log(1/(2*K)))))[np.argsort(avg_traces)][::-1]
+            weights = 1 - (np.exp(-np.arange(K)**2/K) / (2*K))
+            avg_traces[np.argsort(avg_traces)] *= weights
             avg_traces = np.maximum(avg_traces, 1 - avg_traces)
             kwargs["avg_trace"] = avg_traces
             make_dataset(

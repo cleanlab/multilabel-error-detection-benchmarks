@@ -109,9 +109,9 @@ def simple_moving_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.nda
 def exponential_moving_average(s: np.ndarray, *, alpha: Optional[float] = None, axis: int = 1) -> np.ndarray: 
     """Exponential moving average (EMA) score function.
 
-    For a score vector s = (s_1, ..., s_K) with K scores, the function evaluates
-    sorts the scores in *descending* order and returns the exponential moving average
-    of all scores.
+    For a score vector s = (s_1, ..., s_K) with K scores, the values 
+    are sorted in *descending* order and the exponential moving average
+    of the last score is calculated.
 
     Parameters
     ----------

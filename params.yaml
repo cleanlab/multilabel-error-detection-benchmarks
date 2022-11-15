@@ -21,7 +21,7 @@ dataset_kwargs:
     allow_unlabeled: true
     sparse: false
     test_size: 0.05
-    avg_trace: 0.925
+    avg_trace: 0.925 # Should be overwritten/ignored by sampling from a gamma distribution (see below)
     gamma: # This will be popped out of the params dict
       shape: 2.0
       scale: 0.01
@@ -34,7 +34,7 @@ dataset_kwargs:
     allow_unlabeled: true
     sparse: false
     test_size: 0.05
-    avg_trace: 0.995
+    avg_trace: 0.995 # Should be overwritten/ignored by sampling from a gamma distribution (see below)
     gamma: # This will be popped out of the params dict
       shape: 2.0
       scale: 0.01

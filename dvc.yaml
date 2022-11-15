@@ -29,3 +29,11 @@ stages:
     metrics:
     - data/scores/results_agg.json:
         cache: false
+  plot_avg_trace:
+    cmd: python src/data/plot_avg_trace.py
+    deps:
+    - src/data/plot_avg_trace.py
+    params:
+    - dataset_kwargs.small.gamma
+    plots:
+    - data/images/avg_trace.svg

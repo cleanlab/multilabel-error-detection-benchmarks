@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 
 from cleanlab.internal.util import train_val_split
-import cleanlab.internal.multilabel_utils as mlutils
+import cleanlab.internal.multilabel_scorer as mlscorer
 import sklearn
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -87,13 +87,13 @@ if __name__ == "__main__":
     for dataset_file in tqdm(dataset_files):
         dataset = pickle.load(open(dataset_file, "rb"))
         # Unpack the dataset
-        X_train, true_labels_train, X_test, true_labels_test, labels, label_errors_mask, multiple_errors_mask_dict, ps, py, noise_matrix, m, n = [
+        X_train, true_labels_train, X_test, true_labels_test, labels, noisy_test_labels, label_errors_mask, test_label_errors_mask, multiple_errors_mask_dict, test_multiple_errors_mask_dict, ps, py, noise_matrix, m, n = [
             dataset[k] for k in dataset.keys()
         ]
 
         pred_probs_dict = {}
         for clf_name, clf in [("log_reg", clf_log_reg), ("rf", clf_rf)]: 
-            pred_probs = mlutils.get_cross_validated_multilabel_pred_probs(X_train, labels, clf=clf, cv=kf)
+            pred_probs = mlscorer.get_cross_validated_multilabel_pred_probs(X_train, labels, clf=clf, cv=kf)
             pred_probs_dict[clf_name] = pred_probs
 
         # Save the predicted probabilities
