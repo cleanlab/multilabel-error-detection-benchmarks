@@ -35,6 +35,9 @@ dvc repro
       +-------+    
       | score |
       +-------+
+  +----------------+ 
+  | plot_avg_trace | 
+  +----------------+ 
   ```
     
   - The `score` stage outputs two files in `data/scores`:
