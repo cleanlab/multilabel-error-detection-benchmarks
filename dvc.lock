@@ -10,27 +10,27 @@ stages:
       params.yaml:
         dataset_kwargs:
           small:
-            n_samples: 5000
+            n_samples: 6000
             n_features: 3
             n_classes: 4
             n_labels: 2
             length: 500
             allow_unlabeled: true
             sparse: false
-            test_size: 0.05
+            test_size: 1000
             avg_trace: 0.925
             gamma:
               shape: 2.0
               scale: 0.01
           large:
-            n_samples: 30000
+            n_samples: 37500
             n_features: 20
             n_classes: 50
             n_labels: 5
             length: 500
             allow_unlabeled: true
             sparse: false
-            test_size: 0.05
+            test_size: 7500
             avg_trace: 0.995
             gamma:
               shape: 2.0
@@ -48,8 +48,8 @@ stages:
         - 9
     outs:
     - path: data/generated
-      md5: 708906b9469fbda0a096531300f4bcbe.dir
-      size: 297352100
+      md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
+      size: 371398436
       nfiles: 20
   train:
     cmd: python src/models/train.py
@@ -129,3 +129,30 @@ stages:
     - path: data/images/avg_trace.svg
       md5: f210c12bcaf6f2b786799a2cb9640cda
       size: 25806
+  get_avg_accuracy:
+    cmd: python src/models/avg_accuracy.py
+    deps:
+    - path: data/generated
+      md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
+      size: 371398436
+      nfiles: 20
+    - path: src/models/avg_accuracy.py
+      md5: 3f548582de8b27c4b58ba24e67517010
+      size: 5662
+    outs:
+    - path: data/accuracy/results.csv
+      md5: 3d93b4d882941d3eca15b82ff13df2ff
+      size: 8436
+  group_stats:
+    cmd: python src/models/group_stats.py
+    deps:
+    - path: data/accuracy/results.csv
+      md5: 3d93b4d882941d3eca15b82ff13df2ff
+      size: 8436
+    - path: src/models/group_stats.py
+      md5: 31cbb0ed8b59b7d7bb36d6142f51ab1e
+      size: 1018
+    outs:
+    - path: data/accuracy/results_group.csv
+      md5: 696248e4cbc3008eea73b4b5b975db46
+      size: 741

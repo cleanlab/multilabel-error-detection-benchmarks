@@ -37,3 +37,17 @@ stages:
     - dataset_kwargs.small.gamma
     plots:
     - data/images/avg_trace.svg
+  get_avg_accuracy:
+    cmd: python src/models/avg_accuracy.py
+    deps:
+    - data/generated
+    - src/models/avg_accuracy.py
+    outs:
+    - data/accuracy/results.csv
+  group_stats:
+    cmd: python src/models/group_stats.py
+    deps:
+    - data/accuracy/results.csv
+    - src/models/group_stats.py
+    outs:
+    - data/accuracy/results_group.csv

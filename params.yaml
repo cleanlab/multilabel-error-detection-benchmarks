@@ -13,27 +13,27 @@ seeds:
 
 dataset_kwargs:
   small:
-    n_samples: 5000
+    n_samples: 6000
     n_features: 3
     n_classes: 4
     n_labels: 2
     length: 500
     allow_unlabeled: true
     sparse: false
-    test_size: 0.05
+    test_size: 1000
     avg_trace: 0.925 # Should be overwritten/ignored by sampling from a gamma distribution (see below)
     gamma: # This will be popped out of the params dict
       shape: 2.0
       scale: 0.01
   large:
-    n_samples: 30000
+    n_samples: 37500
     n_features: 20
     n_classes: 50
     n_labels: 5
     length: 500
     allow_unlabeled: true
     sparse: false
-    test_size: 0.05
+    test_size: 7500
     avg_trace: 0.995 # Should be overwritten/ignored by sampling from a gamma distribution (see below)
     gamma: # This will be popped out of the params dict
       shape: 2.0
