@@ -137,22 +137,22 @@ stages:
       size: 371398436
       nfiles: 20
     - path: src/models/avg_accuracy.py
-      md5: 3f548582de8b27c4b58ba24e67517010
-      size: 5662
+      md5: d5251951297158907a148283b2dc5e40
+      size: 5715
     outs:
     - path: data/accuracy/results.csv
-      md5: 3d93b4d882941d3eca15b82ff13df2ff
-      size: 8436
+      md5: ff5d7521e7fcaab144468fa46f3773cd
+      size: 18703
   group_stats:
     cmd: python src/models/group_stats.py
     deps:
     - path: data/accuracy/results.csv
-      md5: 3d93b4d882941d3eca15b82ff13df2ff
-      size: 8436
+      md5: ff5d7521e7fcaab144468fa46f3773cd
+      size: 18703
     - path: src/models/group_stats.py
-      md5: 31cbb0ed8b59b7d7bb36d6142f51ab1e
-      size: 1018
+      md5: 1be3da240cebcecde7992eab20a91069
+      size: 1006
     outs:
     - path: data/accuracy/results_group.csv
-      md5: 696248e4cbc3008eea73b4b5b975db46
-      size: 741
+      md5: e699f732148816ca2cd18d880ff87402
+      size: 1177

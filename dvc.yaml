@@ -43,7 +43,8 @@ stages:
     - data/generated
     - src/models/avg_accuracy.py
     outs:
-    - data/accuracy/results.csv
+    - data/accuracy/results.csv:
+        persist: true
   group_stats:
     cmd: python src/models/group_stats.py
     deps:

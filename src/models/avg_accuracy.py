@@ -21,6 +21,7 @@ from sklearn.metrics import accuracy_score, hamming_loss, jaccard_score
 DATA_DIR = pathlib.Path("data/generated")
 OUTPUT_DIR = pathlib.Path("data/accuracy")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+RESULTS_FILE = OUTPUT_DIR / "results.csv"
 
 def train_on_dataset(
     clf_log_reg,
@@ -115,8 +116,6 @@ if __name__ == "__main__":
     dataset_files = list(DATA_DIR.glob("*.pkl"))
     dataset_files.sort()
 
-    # Only "small" datasets
-    dataset_files = [dataset_file for dataset_file in dataset_files if "small" in dataset_file.stem]
 
     clf_log_reg = OneVsRestClassifier(LogisticRegression(random_state=seed), n_jobs=-1)
     clf_rf = OneVsRestClassifier(RandomForestClassifier(random_state=seed), n_jobs=-1)
@@ -134,12 +133,17 @@ if __name__ == "__main__":
     ]
     df = pd.DataFrame(columns=COLUMNS)
 
+    if RESULTS_FILE.exists():
+        df = pd.read_csv(RESULTS_FILE)
+
     for dataset_file in tqdm(dataset_files):
+        if dataset_file.stem in df["dataset"].values:
+            continue
         dataset = pickle.load(open(dataset_file, "rb"))
         X_train, labels, true_labels_train, X_test, noisy_test_labels, true_labels_test = unpack_dataset(dataset)
 
         label_to_id, labels_idx, true_labels_train_idx, noisy_test_labels_idx, true_labels_test_idx = preprocess_labels(labels, true_labels_train, noisy_test_labels, true_labels_test)
         # Add dataset/group to df
         df = train_on_dataset(clf_log_reg, clf_rf, df, dataset_file, X_train, labels, true_labels_train, X_test, noisy_test_labels, true_labels_test, label_to_id, labels_idx, true_labels_train_idx, noisy_test_labels_idx, true_labels_test_idx)
-
-    df.to_csv(OUTPUT_DIR / "results.csv", index=False)
+    
+        df.to_csv(RESULTS_FILE, index=False)
