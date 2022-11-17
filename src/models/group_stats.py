@@ -4,7 +4,7 @@ import pathlib
 
 OUTPUT_DIR = pathlib.Path("data/accuracy")
 def get_group_statistics(df):
-    stats_columns = ["Accuracy", "Average accuracy", "Jaccard score"]
+    stats_columns = ["Average accuracy", "Jaccard score"]
     df_group = df.groupby(["dataset_group", "clf", "train_set", "test_set"])[stats_columns].agg(["mean", "std"])
     for column in stats_columns:
         df_group[column, "std"] = df_group[column, "std"].apply(lambda x: "{:.0e}".format(x)).apply(lambda x: float(x))
