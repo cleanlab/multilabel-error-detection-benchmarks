@@ -16,7 +16,7 @@ def get_group_statistics(df):
 
 def get_formatted_group_statistics(df) -> pd.DataFrame:
 
-    def lsd(x) -> int:
+    def lsd(x, sd:int=1) -> int:
         """Returns the number of decimal places to the least significant digit
 
         Negative numbers mean that the least significant digit is to the left of the decimal point.
@@ -38,9 +38,9 @@ def get_formatted_group_statistics(df) -> pd.DataFrame:
         xl, xr = str(x).split(".")
         if xl == "0":
             # Count the number of zeros after the decimal point
-            return len(xr) - len(xr.lstrip("0")) + 1
+            return len(xr) - len(xr.lstrip("0")) + sd
         # Count the number of digits to the left of the decimal point
-        return -len(xl) + 1
+        return -len(xl) + sd
 
     def mean_std_format(x) -> str:
         mean = np.mean(x)
