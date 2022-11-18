@@ -24,7 +24,7 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip3 install -r requirements.txt
-          dvc repro
+          dvc repro group_stats
 
           # Compare metrics to main
           git fetch --prune
