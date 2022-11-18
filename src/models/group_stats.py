@@ -64,5 +64,21 @@ if __name__ == "__main__":
     df_group_stats.to_csv(OUTPUT_DIR / "results_group.csv")
 
     df_group_stats_formatted = get_formatted_group_statistics(df)
-    df_group_stats_formatted.sort_index(ascending=[False, True, True, True])
-    df_group_stats_formatted.to_latex(OUTPUT_DIR / "results_group.tex")
+    df_group_stats_formatted.sort_index(ascending=[False, True, True, True], inplace=True)
+    df_group_stats_formatted.rename(
+        index={
+            "small": "Small",
+            "large": "Large",
+            "Noisy train": "Noisy",
+            "Noisy test": "Noisy",
+            "True train": "True",
+            "True test": "True",
+        },
+        inplace=True
+    )
+    df_group_stats_formatted.index.set_names(["Datasets", "Classifier", "Train labels", "Test labels"], inplace=True)    
+    df_group_stats_formatted.to_latex(
+        OUTPUT_DIR / "results_group.tex",
+        column_format="llllcc",
+        multirow=True,
+    )
