@@ -52,3 +52,4 @@ stages:
     - src/models/group_stats.py
     outs:
     - data/accuracy/results_group.csv
+    - data/accuracy/results_group.tex
