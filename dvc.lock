@@ -150,8 +150,8 @@ stages:
       md5: ff5d7521e7fcaab144468fa46f3773cd
       size: 18703
     - path: src/models/group_stats.py
-      md5: 3af60e808ce5ccf3f9b0c5140b9d0676
-      size: 3123
+      md5: fe35583e9d0b91a70818a7c141c9776a
+      size: 3135
     outs:
     - path: data/accuracy/results_group.csv
       md5: e699f732148816ca2cd18d880ff87402
