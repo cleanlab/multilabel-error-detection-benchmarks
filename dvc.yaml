@@ -50,8 +50,9 @@ stages:
     deps:
     - data/accuracy/results.csv
     - src/models/group_stats.py
-    outs:
+    metrics:
     - data/accuracy/results_group.csv:
         cache: false
+    outs:
     - data/accuracy/results_group.tex:
         cache: false
