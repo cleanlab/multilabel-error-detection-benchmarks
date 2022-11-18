@@ -1,0 +1,17 @@
+dataset_group,clf,train_set,test_set,Average accuracy mean,Average accuracy std,Jaccard score mean,Jaccard score std
+large,Logistic regression,Noisy train,Noisy test,0.906,0.003,0.3,0.02
+large,Logistic regression,Noisy train,True test,0.922,0.002,0.36,0.02
+large,Logistic regression,True train,Noisy test,0.907,0.003,0.31,0.02
+large,Logistic regression,True train,True test,0.923,0.002,0.38,0.02
+large,Random forest,Noisy train,Noisy test,0.903,0.003,0.25,0.02
+large,Random forest,Noisy train,True test,0.919,0.002,0.31,0.02
+large,Random forest,True train,Noisy test,0.903,0.003,0.25,0.02
+large,Random forest,True train,True test,0.919,0.002,0.31,0.02
+small,Logistic regression,Noisy train,Noisy test,0.758,0.03,0.62,0.05
+small,Logistic regression,Noisy train,True test,0.808,0.04,0.69,0.06
+small,Logistic regression,True train,Noisy test,0.754,0.03,0.61,0.05
+small,Logistic regression,True train,True test,0.812,0.04,0.69,0.06
+small,Random forest,Noisy train,Noisy test,0.81,0.04,0.69,0.05
+small,Random forest,Noisy train,True test,0.875,0.04,0.81,0.06
+small,Random forest,True train,Noisy test,0.825,0.04,0.72,0.05
+small,Random forest,True train,True test,0.9,0.04,0.86,0.07

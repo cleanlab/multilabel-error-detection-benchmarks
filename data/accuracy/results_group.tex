@@ -1,0 +1,34 @@
+\begin{tabular}{llllcc}
+\toprule
+      &               &      &      & Average accuracy & Jaccard score \\
+Datasets & Classifier & Train labels & Test labels &                  &               \\
+\midrule
+\multirow{8}{*}{Small} & \multirow{4}{*}{Logistic regression} & \multirow{2}{*}{Noisy} & Noisy &          0.76(3) &       0.62(4) \\
+      &               &      & True &          0.81(4) &       0.69(6) \\
+\cline{3-6}
+      &               & \multirow{2}{*}{True} & Noisy &          0.75(3) &       0.61(5) \\
+      &               &      & True &          0.81(3) &       0.69(6) \\
+\cline{2-6}
+\cline{3-6}
+      & \multirow{4}{*}{Random forest} & \multirow{2}{*}{Noisy} & Noisy &          0.81(3) &       0.69(5) \\
+      &               &      & True &          0.88(4) &       0.81(6) \\
+\cline{3-6}
+      &               & \multirow{2}{*}{True} & Noisy &          0.82(3) &       0.72(5) \\
+      &               &      & True &          0.90(4) &       0.86(6) \\
+\cline{1-6}
+\cline{2-6}
+\cline{3-6}
+\multirow{8}{*}{Large} & \multirow{4}{*}{Logistic regression} & \multirow{2}{*}{Noisy} & Noisy &         0.906(3) &       0.30(2) \\
+      &               &      & True &         0.922(2) &       0.36(2) \\
+\cline{3-6}
+      &               & \multirow{2}{*}{True} & Noisy &         0.907(3) &       0.31(2) \\
+      &               &      & True &         0.923(2) &       0.38(2) \\
+\cline{2-6}
+\cline{3-6}
+      & \multirow{4}{*}{Random forest} & \multirow{2}{*}{Noisy} & Noisy &         0.903(3) &       0.25(2) \\
+      &               &      & True &         0.919(2) &       0.31(2) \\
+\cline{3-6}
+      &               & \multirow{2}{*}{True} & Noisy &         0.903(3) &       0.25(2) \\
+      &               &      & True &         0.919(2) &       0.31(2) \\
+\bottomrule
+\end{tabular}

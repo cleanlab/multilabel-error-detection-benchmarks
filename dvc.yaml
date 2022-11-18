@@ -51,5 +51,7 @@ stages:
     - data/accuracy/results.csv
     - src/models/group_stats.py
     outs:
-    - data/accuracy/results_group.csv
-    - data/accuracy/results_group.tex
+    - data/accuracy/results_group.csv:
+        cache: false
+    - data/accuracy/results_group.tex:
+        cache: false
