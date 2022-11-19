@@ -17,18 +17,6 @@ stages:
     - train
     outs:
     - data/pred_probs/
-  score:
-    cmd: python src/evaluation/score.py
-    deps:
-    - data/pred_probs/
-    - src/evaluation/
-    params:
-    - eval
-    outs:
-    - data/scores/results.csv
-    metrics:
-    - data/scores/results_agg.json:
-        cache: false
   plot_avg_trace:
     cmd: python src/data/plot_avg_trace.py
     deps:
@@ -56,3 +44,29 @@ stages:
     outs:
     - data/accuracy/results_group.tex:
         cache: false
+  score_classes:
+    cmd: python src/evaluation/class_score.py
+    deps:
+    - data/pred_probs/
+    - src/evaluation/class_score.py
+    outs:
+    - data/scores/class_scores.pkl
+  aggregate:
+    cmd: python src/evaluation/score.py
+    deps:
+    - data/scores/class_scores.pkl
+    - src/evaluation/aggregate.py
+    - src/evaluation/score.py
+    params:
+    - eval
+    outs:
+    - data/scores/scores.pkl
+  rank_metrics:
+    desc: Evalute performance of aggregated label quality scores with label error
+      detection and ranking metrics
+    cmd: python src/evaluation/eval_ranking_metrics.py
+    deps:
+    - data/scores/scores.pkl
+    - src/evaluation/eval_ranking_metrics.py
+    outs:
+    - data/scores/results.csv

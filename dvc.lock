@@ -55,8 +55,8 @@ stages:
     cmd: python src/models/train.py
     deps:
     - path: data/generated/
-      md5: 708906b9469fbda0a096531300f4bcbe.dir
-      size: 297352100
+      md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
+      size: 371398436
       nfiles: 20
     - path: src/models/train.py
       md5: 0ac3e2a1ae2cb87872d040343d77a7ca
@@ -68,52 +68,9 @@ stages:
           seed: 0
     outs:
     - path: data/pred_probs/
-      md5: 9fff574b1c48079a0adf98228f92ffe1.dir
-      size: 231044520
+      md5: 517a874bad8def2607eb8cdaad288169.dir
+      size: 243204520
       nfiles: 20
-  score:
-    cmd: python src/evaluation/score.py
-    deps:
-    - path: data/pred_probs/
-      md5: 9fff574b1c48079a0adf98228f92ffe1.dir
-      size: 231044520
-      nfiles: 20
-    - path: src/evaluation/
-      md5: 8a28da35c5c5ced1061413e3089c46a4.dir
-      size: 21579
-      nfiles: 6
-    params:
-      params.yaml:
-        eval:
-          ks:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 10
-          - 20
-          - 50
-          - 100
-          temperatures:
-          - 0.01
-          - 0.1
-          - 1
-          - 10
-          - 100
-          alphas:
-          - 0.2
-          - 0.4
-          - 0.5
-          - 0.6
-          - 0.8
-    outs:
-    - path: data/scores/results.csv
-      md5: 7127e0e51a572a85ac35e321a40d6166
-      size: 632230
-    - path: data/scores/results_agg.json
-      md5: 61a85fdc09062be8af39919d85dd0a8a
-      size: 11852
   plot_avg_trace:
     cmd: python src/data/plot_avg_trace.py
     deps:
@@ -159,3 +116,71 @@ stages:
     - path: data/accuracy/results_group.tex
       md5: 1b9e0811fdbac5173bd573c1e48c379b
       size: 1809
+  score_classes:
+    cmd: python src/evaluation/class_score.py
+    deps:
+    - path: data/pred_probs/
+      md5: 517a874bad8def2607eb8cdaad288169.dir
+      size: 243204520
+      nfiles: 20
+    - path: src/evaluation/class_score.py
+      md5: c72dab62c4630e05cfd7d6858b0e64b0
+      size: 2089
+    outs:
+    - path: data/scores/class_scores.pkl
+      md5: bf9d1dc371e3023bb333a4193c76cdc9
+      size: 243202989
+  aggregate:
+    cmd: python src/evaluation/score.py
+    deps:
+    - path: data/scores/class_scores.pkl
+      md5: bf9d1dc371e3023bb333a4193c76cdc9
+      size: 243202989
+    - path: src/evaluation/aggregate.py
+      md5: e632651e89dd55c312131e6c9b67d345
+      size: 5013
+    - path: src/evaluation/score.py
+      md5: 2f1b9d3dd9f23d42eba3d063cd145d12
+      size: 10362
+    params:
+      params.yaml:
+        eval:
+          ks:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 10
+          - 20
+          - 50
+          - 100
+          temperatures:
+          - 0.01
+          - 0.1
+          - 1
+          - 10
+          - 100
+          alphas:
+          - 0.2
+          - 0.4
+          - 0.5
+          - 0.6
+          - 0.8
+    outs:
+    - path: data/scores/scores.pkl
+      md5: 404fa4c8d8bb3cd6758198d1cc69f0f3
+      size: 184418792
+  rank_metrics:
+    cmd: python src/evaluation/eval_ranking_metrics.py
+    deps:
+    - path: data/scores/scores.pkl
+      md5: 404fa4c8d8bb3cd6758198d1cc69f0f3
+      size: 184418792
+    - path: src/evaluation/eval_ranking_metrics.py
+      md5: 2b970164bcf9a2bdc6caeb80116eae81
+      size: 4164
+    outs:
+    - path: data/scores/results.csv
+      md5: e4c0a4572d6dd8c1f0e1b85869eb38dc
+      size: 523654
