@@ -70,3 +70,10 @@ stages:
     - src/evaluation/eval_ranking_metrics.py
     outs:
     - data/scores/results.csv
+  plot_metrics:
+    cmd: python src/evaluation/plot_metrics.py
+    deps:
+    - data/scores/results.csv
+    - src/evaluation/plot_metrics.py
+    plots:
+    - data/images/scores/

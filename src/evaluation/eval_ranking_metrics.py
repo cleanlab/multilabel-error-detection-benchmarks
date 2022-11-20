@@ -47,16 +47,10 @@ def update_experiment_metrics(experiment: dict, scores: np.ndarray, mask: np.nda
     })
 
 def main():
-    # Load params.yaml
-    # all_params = yaml.load(open("params.yaml"), Loader=yaml.FullLoader)
-
-    # aggregator_params = all_params["eval"]
-
     df = pd.read_pickle(SCORE_DIR / "scores.pkl")
 
-
     # New experiments
-    experiments = []
+    experiments_with_metrics = []
     for experiment in tqdm(df.to_dict(orient="records"), miniters=len(df)//25):
         label_errors_mask = experiment.pop("label_errors_mask")
         two_label_errors_mask = experiment.pop("two_label_errors_mask")
@@ -72,9 +66,9 @@ def main():
 
         ):
             update_experiment_metrics(experiment, scores, mask, mask_name_suffix, k)
-        experiments.append(experiment)
+        experiments_with_metrics.append(experiment)
 
-    df_with_metrics = pd.DataFrame(experiments)
+    df_with_metrics = pd.DataFrame(experiments_with_metrics)
 
     df_with_metrics.to_csv(SCORE_DIR / "results.csv", index=False)
     # df = run_all_experiments(aggregator_params=aggregator_params)

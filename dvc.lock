@@ -140,8 +140,8 @@ stages:
       md5: e632651e89dd55c312131e6c9b67d345
       size: 5013
     - path: src/evaluation/score.py
-      md5: 2f1b9d3dd9f23d42eba3d063cd145d12
-      size: 10362
+      md5: d5195bcebb11cd12fbae6aafc2232f41
+      size: 10296
     params:
       params.yaml:
         eval:
@@ -178,9 +178,23 @@ stages:
       md5: 404fa4c8d8bb3cd6758198d1cc69f0f3
       size: 184418792
     - path: src/evaluation/eval_ranking_metrics.py
-      md5: 2b970164bcf9a2bdc6caeb80116eae81
-      size: 4164
+      md5: 913d5dd7d146ed39c807d9f95f990919
+      size: 4058
     outs:
     - path: data/scores/results.csv
       md5: e4c0a4572d6dd8c1f0e1b85869eb38dc
       size: 523654
+  plot_metrics:
+    cmd: python src/evaluation/plot_metrics.py
+    deps:
+    - path: data/scores/results.csv
+      md5: e4c0a4572d6dd8c1f0e1b85869eb38dc
+      size: 523654
+    - path: src/evaluation/plot_metrics.py
+      md5: 867838cbb1d1f23e805f0a3ea6c64605
+      size: 5874
+    outs:
+    - path: data/images/scores/
+      md5: 5b52febd2978b448bd1151cbfb8a0976.dir
+      size: 21255755
+      nfiles: 18
