@@ -79,7 +79,7 @@ def get_ema_plot_df(
 def format_image_filename(model: str, metric: str):
     model_str = model.lower().replace(" ", "_")
     metric_str = metric.lower().replace(" ", "_")
-    return f"{model_str}_{metric_str}.png"
+    return f"{model_str}_{metric_str}.pdf"
 
 def generate_metric_plots(
     df: pd.DataFrame,
