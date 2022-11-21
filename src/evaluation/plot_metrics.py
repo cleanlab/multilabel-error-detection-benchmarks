@@ -134,8 +134,8 @@ def main():
 
     # Rename values maps
     size_map = {
-        "small": "Small",
-        "large": "Large",
+        "small": "Small Dataset",
+        "large": "Large Dataset",
     }
 
     model_map = {
