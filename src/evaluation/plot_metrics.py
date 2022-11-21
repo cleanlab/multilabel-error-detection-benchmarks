@@ -141,9 +141,14 @@ def main():
         "rf": "Random Forest",
     }
 
+    aggregator_map = {
+        "amin": "min",
+        "amax": "max",
+    }
+
     # Rename values
-    for col, map_dict in zip(["Dataset size", "Model"], [size_map, model_map]):
-        df[col] = df[col].map(map_dict)
+    for col, map_dict in zip(["Dataset size", "Model", "Aggregation method"], [size_map, model_map, aggregator_map]):
+        df[col] = df[col].map(map_dict).fillna(df[col])
 
 
     # Types of models to plot
