@@ -91,21 +91,19 @@ def generate_metric_plots(
 ):
     for metric in metrics:
         plt.figure(figsize=(24, 18), dpi=400)
-        ax = plot_swarm(df, model, metric, group_by, hue)
+        ax = plot_swarm(df, metric, group_by, hue)
 
         plt.savefig(IMAGE_DIR / (prefix + format_image_filename(model, metric)))
         plt.close()
 
 def plot_swarm(
     df: pd.DataFrame,
-    model: str,
     metric: str,
     group_by: list[str],
     hue: str = "Dataset size",
 ):
     x = group_by[-1]
     ax = sns.swarmplot(data=df, x=x, y=metric, hue=hue, dodge=True, size=9)
-    ax.set_title(f"{model} - {metric} by '{x}' and '{hue}'")
     plt.setp(ax.get_xticklabels(), rotation=20, fontsize=18)
     plt.setp(ax.get_yticklabels(), fontsize=18)
 
