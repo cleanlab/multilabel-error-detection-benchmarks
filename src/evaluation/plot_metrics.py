@@ -1,3 +1,4 @@
+import ast
 import pathlib
 
 import matplotlib.pyplot as plt
@@ -88,10 +89,13 @@ def generate_metric_plots(
     group_by: list[str],
     hue: str = "Dataset size",
     prefix: str = "",
+    legend_title: str = "",
 ):
     for metric in metrics:
         plt.figure(figsize=(24, 18), dpi=400)
         ax = plot_swarm(df, metric, group_by, hue)
+        if legend_title:
+            ax.legend(title=legend_title)
 
         plt.savefig(IMAGE_DIR / (prefix + format_image_filename(model, metric)))
         plt.close()
@@ -113,6 +117,7 @@ def plot_swarm(
     ax.yaxis.label.set_fontsize(18)
     ax.legend(fontsize=18)
     
+    ax.set_xlabel("")
     ax.set_ylabel(metric)
 
     for i in range(df[x].nunique()):
@@ -146,8 +151,20 @@ def main():
         "amax": "max",
     }
 
+    ema_aggregator_kwargs_map = {
+        kwargs: ast.literal_eval(kwargs)["alpha"]
+        for kwargs in (
+            df[
+                df["Aggregation method"]
+                .str
+                .contains("exponential_moving_average")
+            ]["Aggregation method parameters"]
+        )  
+    }
+    ema_aggregator_kwargs_map.update({"{'alpha': None}": "2/(K+1)"})
+
     # Rename values
-    for col, map_dict in zip(["Dataset size", "Model", "Aggregation method"], [size_map, model_map, aggregator_map]):
+    for col, map_dict in zip(["Dataset size", "Model", "Aggregation method", "Aggregation method parameters"], [size_map, model_map, aggregator_map, ema_aggregator_kwargs_map]):
         df[col] = df[col].map(map_dict).fillna(df[col])
 
 
@@ -186,7 +203,7 @@ def main():
     ]
     for model in models:
         plot_df = get_ema_plot_df(df, model)
-        generate_metric_plots(plot_df, model, metrics, group_by, hue=hue, prefix="ema_")
+        generate_metric_plots(plot_df, model, metrics, group_by, hue=hue, prefix="ema_", legend_title="alpha")
 
 if __name__ == "__main__":
     main()
