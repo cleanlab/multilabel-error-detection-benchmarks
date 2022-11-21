@@ -116,7 +116,6 @@ def plot_swarm(
     ax.legend(fontsize=18)
     
     ax.set_ylabel(metric)
-    ax.set_xlabel(group_by[0])
 
     for i in range(df[x].nunique()):
         ax.axvline(i + 0.5, color="gray", c=".5", linestyle="--", linewidth=1)
