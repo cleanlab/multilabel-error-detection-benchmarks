@@ -167,34 +167,37 @@ stages:
           - 0.5
           - 0.6
           - 0.8
+          - 0.85
+          - 0.9
+          - 0.95
     outs:
     - path: data/scores/scores.pkl
-      md5: 404fa4c8d8bb3cd6758198d1cc69f0f3
-      size: 184418792
+      md5: 1f68763c514dceedf7daa55a61234100
+      size: 201235716
   rank_metrics:
     cmd: python src/evaluation/eval_ranking_metrics.py
     deps:
     - path: data/scores/scores.pkl
-      md5: 404fa4c8d8bb3cd6758198d1cc69f0f3
-      size: 184418792
+      md5: 1f68763c514dceedf7daa55a61234100
+      size: 201235716
     - path: src/evaluation/eval_ranking_metrics.py
       md5: 913d5dd7d146ed39c807d9f95f990919
       size: 4058
     outs:
     - path: data/scores/results.csv
-      md5: e4c0a4572d6dd8c1f0e1b85869eb38dc
-      size: 523654
+      md5: 3a47032264c8e64c8f158516224f13c6
+      size: 578090
   plot_metrics:
     cmd: python src/evaluation/plot_metrics.py
     deps:
     - path: data/scores/results.csv
-      md5: e4c0a4572d6dd8c1f0e1b85869eb38dc
-      size: 523654
+      md5: 3a47032264c8e64c8f158516224f13c6
+      size: 578090
     - path: src/evaluation/plot_metrics.py
-      md5: 867838cbb1d1f23e805f0a3ea6c64605
-      size: 5874
+      md5: 5508df222896e8ae0d6aa0dfcd6714fd
+      size: 8634
     outs:
     - path: data/images/scores/
-      md5: 5b52febd2978b448bd1151cbfb8a0976.dir
-      size: 21255755
-      nfiles: 18
+      md5: 3059972ae3ba1fd3e579bd9e25f54032.dir
+      size: 417631
+      nfiles: 20
