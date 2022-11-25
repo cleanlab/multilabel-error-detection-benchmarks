@@ -39,21 +39,10 @@ dataset_kwargs:
       shape: 2.0
       scale: 0.01
 
-gaussian:
-  small:
-    k: 3
-    n: 2
-    N_means: 8
-  large:
-    k: 50
-    n: 10
-    N_means: 20
-
 
 train:
   cv_n_folds: 5
   seed: 0
-  # ADD MODEL
 
 eval:
   ks:
