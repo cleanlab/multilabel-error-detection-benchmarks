@@ -72,9 +72,15 @@ dvc repro
   plot_avg_trace    Plot average traces of noise matrices used for noisy label generation.
   ```
     
-  - The `score` stage outputs two files in `data/scores`:
-    - `results.csv`: All experimental results
+  - The `group_stats` stage outputs two files in `data/accuracies/`:
+    - `results_group.csv`: All experimental results
     - `results_agg.json`: Overall stats for the different aggregator methods.
+
+  - The stages have variouus output files and directories. This is best viewed with `dvc dag -o`. Ignoring most of the intermediate files, the most relevant files are:
+    - data/accuracy/results_group.csv: Statistics of model performance metrics for each group of datasets.
+    - data/scores/results.csv: Class label quality scores for each example in each dataset.
+    - data/scores/metrics.csv: Statistics of label error detection and ranking metrics for each group of datasets.
+
 
 4. Inspect the synthetic datasets in the `notebooks/inspect_generated_data.ipynb` notebook.
 5. Inspect the results in the `notebooks/inspect_score_results.ipynb` notebook.

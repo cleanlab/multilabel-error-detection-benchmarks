@@ -194,10 +194,13 @@ stages:
       md5: 3a47032264c8e64c8f158516224f13c6
       size: 578090
     - path: src/evaluation/plot_metrics.py
-      md5: 5508df222896e8ae0d6aa0dfcd6714fd
-      size: 8634
+      md5: bd72eb1bb930bc77b7ba59130f0fff75
+      size: 9667
     outs:
     - path: data/images/scores/
-      md5: 3059972ae3ba1fd3e579bd9e25f54032.dir
+      md5: 4bdee1ce58352b8fcf79f8c3d426aaf1.dir
       size: 417631
       nfiles: 20
+    - path: data/scores/metrics.csv
+      md5: 57840cf45a1d81004e742d3e2bd261e4
+      size: 15657

@@ -230,8 +230,41 @@ def preprocess_data():
     df = drop_experiments_for_single_dataset_size(df)
     return df
 
+
+def flatten_cols(df):
+    df.columns = ['_'.join(x) for x in df.columns.to_flat_index()]    
+    df.columns = df.columns.str.rstrip("_")
+    return df.reset_index()
+
+def save_metrics(df):
+    """Aggregate scores and save to metrics file."""
+
+    metrics = [
+        "AUPRC",
+        "AUROC",
+        "AP@T",
+        "AP@T (two or more label errors)",
+        "AP@T (three or more label errors)",
+        "Spearman Rank Correlation",
+    ]
+    metrics_df = (
+        df
+        .groupby(["Dataset size", "Model", "Aggregation method", "Aggregation method parameters"])[metrics]
+        .agg(["mean", "std"])
+        .reset_index()
+        .round(5)
+        .sort_values(by=["Dataset size", "Model", "Aggregation method", "Aggregation method parameters"], ascending=[False, True, True, True])
+        .reset_index(drop=True)
+        .rename(columns={"mean": "Mean", "std": "Std"})
+        .pipe(flatten_cols)
+        .drop(columns=["index"])
+    )
+    metrics_df.to_csv(SCORE_DIR / "metrics.csv", index=False)
+
+
 def main():
-    df = preprocess_data()
+    df = preprocess_data() 
+    save_metrics(df)
 
     # Types of models to plot
     models = ["Logistic Regression", "Random Forest"]

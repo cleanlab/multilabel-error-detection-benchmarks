@@ -10,7 +10,8 @@ stages:
     outs:
     - data/generated
   train:
-    desc: Train models and get out-of-sample predicted probabilities on the training sets.
+    desc: Train models and get out-of-sample predicted probabilities on the training
+      sets.
     cmd: python src/models/train.py
     deps:
     - data/generated/
@@ -84,3 +85,6 @@ stages:
     - src/evaluation/plot_metrics.py
     plots:
     - data/images/scores/
+    metrics:
+    - data/scores/metrics.csv:
+        cache: false
