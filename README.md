@@ -16,7 +16,7 @@ pip install -r requirements.txt
 dvc repro
 ```
 
-  - The pipeline has 3 stages:
+  - The pipeline has several stages:
   
   ```bash
   $ dvc dag
@@ -56,6 +56,20 @@ dvc repro
   +----------------+ 
   | plot_avg_trace | 
   +----------------+ 
+  ```
+
+  A description of each stage is given below.
+  ```
+  $ dvc stage list
+  make_dataset      Create groups of datasets of different sizes & number of classes.
+  train             Train models and get out-of-sample predicted probabilities on the training sets.
+  get_avg_accuracy  Get model performance metrics on test sets, with and without label errors.
+  group_stats       Summarize model performance metrics for each group of datasets.
+  score_classes     Compute class label quality scores for each example in a dataset.
+  aggregate         Aggregate class label quality scores for all classes into a single score.
+  rank_metrics      Compute label error detection metrics for aggregated scores.
+  plot_metrics      Plot the label error detection and ranking metrics for the aggregated scores.
+  plot_avg_trace    Plot average traces of noise matrices used for noisy label generation.
   ```
     
   - The `score` stage outputs two files in `data/scores`:
