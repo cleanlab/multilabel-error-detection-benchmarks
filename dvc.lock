@@ -1,0 +1,206 @@
+schema: '2.0'
+stages:
+  make_dataset:
+    cmd: python src/data/make_dataset.py
+    deps:
+    - path: src/data/make_dataset.py
+      md5: 9d0e0a78b123e260ad6e55461a83497d
+      size: 10530
+    params:
+      params.yaml:
+        dataset_kwargs:
+          small:
+            n_samples: 6000
+            n_features: 3
+            n_classes: 4
+            n_labels: 2
+            length: 500
+            allow_unlabeled: true
+            sparse: false
+            test_size: 1000
+            avg_trace: 0.925
+            gamma:
+              shape: 2.0
+              scale: 0.01
+          large:
+            n_samples: 37500
+            n_features: 20
+            n_classes: 50
+            n_labels: 5
+            length: 500
+            allow_unlabeled: true
+            sparse: false
+            test_size: 7500
+            avg_trace: 0.995
+            gamma:
+              shape: 2.0
+              scale: 0.01
+        seeds:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+    outs:
+    - path: data/generated
+      md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
+      size: 371398436
+      nfiles: 20
+  train:
+    cmd: python src/models/train.py
+    deps:
+    - path: data/generated/
+      md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
+      size: 371398436
+      nfiles: 20
+    - path: src/models/train.py
+      md5: 0ac3e2a1ae2cb87872d040343d77a7ca
+      size: 3632
+    params:
+      params.yaml:
+        train:
+          cv_n_folds: 5
+          seed: 0
+    outs:
+    - path: data/pred_probs/
+      md5: 517a874bad8def2607eb8cdaad288169.dir
+      size: 243204520
+      nfiles: 20
+  plot_avg_trace:
+    cmd: python src/data/plot_avg_trace.py
+    deps:
+    - path: src/data/plot_avg_trace.py
+      md5: 01dc511cf252de6b06535845d459bb5a
+      size: 1650
+    params:
+      params.yaml:
+        dataset_kwargs.small.gamma:
+          shape: 2.0
+          scale: 0.01
+    outs:
+    - path: data/images/avg_trace.svg
+      md5: f210c12bcaf6f2b786799a2cb9640cda
+      size: 25806
+  get_avg_accuracy:
+    cmd: python src/models/avg_accuracy.py
+    deps:
+    - path: data/generated
+      md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
+      size: 371398436
+      nfiles: 20
+    - path: src/models/avg_accuracy.py
+      md5: d5251951297158907a148283b2dc5e40
+      size: 5715
+    outs:
+    - path: data/accuracy/results.csv
+      md5: ff5d7521e7fcaab144468fa46f3773cd
+      size: 18703
+  group_stats:
+    cmd: python src/models/group_stats.py
+    deps:
+    - path: data/accuracy/results.csv
+      md5: ff5d7521e7fcaab144468fa46f3773cd
+      size: 18703
+    - path: src/models/group_stats.py
+      md5: fe35583e9d0b91a70818a7c141c9776a
+      size: 3135
+    outs:
+    - path: data/accuracy/results_group.csv
+      md5: e699f732148816ca2cd18d880ff87402
+      size: 1177
+    - path: data/accuracy/results_group.tex
+      md5: 1b9e0811fdbac5173bd573c1e48c379b
+      size: 1809
+  score_classes:
+    cmd: python src/evaluation/class_score.py
+    deps:
+    - path: data/pred_probs/
+      md5: 517a874bad8def2607eb8cdaad288169.dir
+      size: 243204520
+      nfiles: 20
+    - path: src/evaluation/class_score.py
+      md5: c72dab62c4630e05cfd7d6858b0e64b0
+      size: 2089
+    outs:
+    - path: data/scores/class_scores.pkl
+      md5: bf9d1dc371e3023bb333a4193c76cdc9
+      size: 243202989
+  aggregate:
+    cmd: python src/evaluation/score.py
+    deps:
+    - path: data/scores/class_scores.pkl
+      md5: bf9d1dc371e3023bb333a4193c76cdc9
+      size: 243202989
+    - path: src/evaluation/aggregate.py
+      md5: e632651e89dd55c312131e6c9b67d345
+      size: 5013
+    - path: src/evaluation/score.py
+      md5: d5195bcebb11cd12fbae6aafc2232f41
+      size: 10296
+    params:
+      params.yaml:
+        eval:
+          ks:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 10
+          - 20
+          - 50
+          - 100
+          temperatures:
+          - 0.01
+          - 0.1
+          - 1
+          - 10
+          - 100
+          alphas:
+          - 0.2
+          - 0.4
+          - 0.5
+          - 0.6
+          - 0.8
+          - 0.85
+          - 0.9
+          - 0.95
+    outs:
+    - path: data/scores/scores.pkl
+      md5: 1f68763c514dceedf7daa55a61234100
+      size: 201235716
+  rank_metrics:
+    cmd: python src/evaluation/eval_ranking_metrics.py
+    deps:
+    - path: data/scores/scores.pkl
+      md5: 1f68763c514dceedf7daa55a61234100
+      size: 201235716
+    - path: src/evaluation/eval_ranking_metrics.py
+      md5: 913d5dd7d146ed39c807d9f95f990919
+      size: 4058
+    outs:
+    - path: data/scores/results.csv
+      md5: 3a47032264c8e64c8f158516224f13c6
+      size: 578090
+  plot_metrics:
+    cmd: python src/evaluation/plot_metrics.py
+    deps:
+    - path: data/scores/results.csv
+      md5: 3a47032264c8e64c8f158516224f13c6
+      size: 578090
+    - path: src/evaluation/plot_metrics.py
+      md5: bd72eb1bb930bc77b7ba59130f0fff75
+      size: 9667
+    outs:
+    - path: data/images/scores/
+      md5: 4bdee1ce58352b8fcf79f8c3d426aaf1.dir
+      size: 417631
+      nfiles: 20
+    - path: data/scores/metrics.csv
+      md5: 57840cf45a1d81004e742d3e2bd261e4
+      size: 15657
