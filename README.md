@@ -17,45 +17,45 @@ dvc repro
 ```
 
   - The pipeline has several stages:
-  
+
   ```bash
   $ dvc dag
-                +--------------+               
-                | make_dataset |               
-                +--------------+               
-                 ***          ***              
-                *                *             
-              **                  **           
-  +------------------+          +-------+      
-  | get_avg_accuracy |          | train |      
-  +------------------+          +-------+      
-            *                        *         
-            *                        *         
-            *                        *         
-    +-------------+         +---------------+  
-    | group_stats |         | score_classes |  
-    +-------------+         +---------------+  
-                                     *         
-                                     *         
-                                     *         
-                              +-----------+    
-                              | aggregate |    
-                              +-----------+    
-                                     *         
-                                     *         
-                                     *         
-                             +--------------+  
-                             | rank_metrics |  
-                             +--------------+  
-                                     *         
-                                     *         
-                                     *         
-                             +--------------+  
-                             | plot_metrics |  
-                             +--------------+  
-  +----------------+ 
-  | plot_avg_trace | 
-  +----------------+ 
+                +--------------+
+                | make_dataset |
+                +--------------+
+                 ***          ***
+                *                *
+              **                  **
+  +------------------+          +-------+
+  | get_avg_accuracy |          | train |
+  +------------------+          +-------+
+            *                        *
+            *                        *
+            *                        *
+    +-------------+         +---------------+
+    | group_stats |         | score_classes |
+    +-------------+         +---------------+
+                                     *
+                                     *
+                                     *
+                              +-----------+
+                              | aggregate |
+                              +-----------+
+                                     *
+                                     *
+                                     *
+                             +--------------+
+                             | rank_metrics |
+                             +--------------+
+                                     *
+                                     *
+                                     *
+                             +--------------+
+                             | plot_metrics |
+                             +--------------+
+  +----------------+
+  | plot_avg_trace |
+  +----------------+
   ```
 
   A description of each stage is given below.
@@ -71,7 +71,7 @@ dvc repro
   plot_metrics      Plot the label error detection and ranking metrics for the aggregated scores.
   plot_avg_trace    Plot average traces of noise matrices used for noisy label generation.
   ```
-    
+
   - The `group_stats` stage outputs two files in `data/accuracies/`:
     - `results_group.csv`: All experimental results
     - `results_agg.json`: Overall stats for the different aggregator methods.

@@ -23,6 +23,7 @@ OUTPUT_DIR = pathlib.Path("data/accuracy")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 RESULTS_FILE = OUTPUT_DIR / "results.csv"
 
+
 def train_on_dataset(
     clf_log_reg,
     clf_rf,
@@ -38,28 +39,26 @@ def train_on_dataset(
     labels_idx,
     true_labels_train_idx,
     noisy_test_labels_idx,
-    true_labels_test_idx):
+    true_labels_test_idx,
+):
     row = {
         "dataset": dataset_file.stem,
         "dataset_group": dataset_file.stem.split("_")[0],
     }
     for clf, clf_str in zip(
-        [clf_log_reg, clf_rf],
-        ["Logistic regression", "Random forest"]
+        [clf_log_reg, clf_rf], ["Logistic regression", "Random forest"]
     ):
         # Add clf to row
         row["clf"] = clf_str
         for train_labels, train_str in zip(
-            [labels, true_labels_train],
-            
-            ["Noisy train", "True train"]
+            [labels, true_labels_train], ["Noisy train", "True train"]
         ):
             # Add train set to row
             row["train_set"] = train_str
             for test_labels, test_idx, test_str in zip(
                 [noisy_test_labels, true_labels_test],
                 [noisy_test_labels_idx, true_labels_test_idx],
-                ["Noisy test", "True test"]
+                ["Noisy test", "True test"],
             ):
                 # Add test set to row
                 row["test_set"] = test_str
@@ -73,7 +72,9 @@ def train_on_dataset(
                 hamming_loss_ = hamming_loss(test_labels, y_pred)
                 row["Hamming loss"] = hamming_loss_
 
-                jaccard_score_ = jaccard_score(test_labels, y_pred, average="samples", zero_division=1)
+                jaccard_score_ = jaccard_score(
+                    test_labels, y_pred, average="samples", zero_division=1
+                )
                 row["Jaccard score"] = jaccard_score_
 
                 # Average acccuracy per class
@@ -83,18 +84,43 @@ def train_on_dataset(
                 df = pd.concat([df, pd.DataFrame([row])], axis=0)
     return df
 
+
 def preprocess_labels(labels, true_labels_train, noisy_test_labels, true_labels_test):
-    combined_labels = np.concatenate([labels, true_labels_train, noisy_test_labels, true_labels_test], axis=0)
+    combined_labels = np.concatenate(
+        [labels, true_labels_train, noisy_test_labels, true_labels_test], axis=0
+    )
     unique_labels = np.unique(combined_labels, axis=0)
     label_to_id = {tuple(label): i for i, label in enumerate(unique_labels)}
     labels_idx = np.array([label_to_id[tuple(label)] for label in labels])
-    true_labels_train_idx = np.array([label_to_id[tuple(label)] for label in true_labels_train])
-    noisy_test_labels_idx = np.array([label_to_id[tuple(label)] for label in noisy_test_labels])
-    true_labels_test_idx = np.array([label_to_id[tuple(label)] for label in true_labels_test])
-    return label_to_id,labels_idx,true_labels_train_idx,noisy_test_labels_idx,true_labels_test_idx
+    true_labels_train_idx = np.array(
+        [label_to_id[tuple(label)] for label in true_labels_train]
+    )
+    noisy_test_labels_idx = np.array(
+        [label_to_id[tuple(label)] for label in noisy_test_labels]
+    )
+    true_labels_test_idx = np.array(
+        [label_to_id[tuple(label)] for label in true_labels_test]
+    )
+    return (
+        label_to_id,
+        labels_idx,
+        true_labels_train_idx,
+        noisy_test_labels_idx,
+        true_labels_test_idx,
+    )
+
 
 def unpack_dataset(dataset):
-    X_train, labels, true_labels_train, X_test, noisy_test_labels, true_labels_test, label_errors_mask, test_label_errors_mask  = [
+    (
+        X_train,
+        labels,
+        true_labels_train,
+        X_test,
+        noisy_test_labels,
+        true_labels_test,
+        label_errors_mask,
+        test_label_errors_mask,
+    ) = [
         dataset["X_train"],
         dataset["labels"],
         dataset["true_labels_train"],
@@ -104,7 +130,15 @@ def unpack_dataset(dataset):
         dataset["label_errors_mask"],
         dataset["test_label_errors_mask"],
     ]
-    return X_train,labels,true_labels_train,X_test,noisy_test_labels,true_labels_test
+    return (
+        X_train,
+        labels,
+        true_labels_train,
+        X_test,
+        noisy_test_labels,
+        true_labels_test,
+    )
+
 
 if __name__ == "__main__":
     # Load params.yaml
@@ -115,7 +149,6 @@ if __name__ == "__main__":
     # Load the datasets
     dataset_files = list(DATA_DIR.glob("*.pkl"))
     dataset_files.sort()
-
 
     clf_log_reg = OneVsRestClassifier(LogisticRegression(random_state=seed), n_jobs=-1)
     clf_rf = OneVsRestClassifier(RandomForestClassifier(random_state=seed), n_jobs=-1)
@@ -140,10 +173,41 @@ if __name__ == "__main__":
         if dataset_file.stem in df["dataset"].values:
             continue
         dataset = pickle.load(open(dataset_file, "rb"))
-        X_train, labels, true_labels_train, X_test, noisy_test_labels, true_labels_test = unpack_dataset(dataset)
+        (
+            X_train,
+            labels,
+            true_labels_train,
+            X_test,
+            noisy_test_labels,
+            true_labels_test,
+        ) = unpack_dataset(dataset)
 
-        label_to_id, labels_idx, true_labels_train_idx, noisy_test_labels_idx, true_labels_test_idx = preprocess_labels(labels, true_labels_train, noisy_test_labels, true_labels_test)
+        (
+            label_to_id,
+            labels_idx,
+            true_labels_train_idx,
+            noisy_test_labels_idx,
+            true_labels_test_idx,
+        ) = preprocess_labels(
+            labels, true_labels_train, noisy_test_labels, true_labels_test
+        )
         # Add dataset/group to df
-        df = train_on_dataset(clf_log_reg, clf_rf, df, dataset_file, X_train, labels, true_labels_train, X_test, noisy_test_labels, true_labels_test, label_to_id, labels_idx, true_labels_train_idx, noisy_test_labels_idx, true_labels_test_idx)
-    
+        df = train_on_dataset(
+            clf_log_reg,
+            clf_rf,
+            df,
+            dataset_file,
+            X_train,
+            labels,
+            true_labels_train,
+            X_test,
+            noisy_test_labels,
+            true_labels_test,
+            label_to_id,
+            labels_idx,
+            true_labels_train_idx,
+            noisy_test_labels_idx,
+            true_labels_test_idx,
+        )
+
         df.to_csv(RESULTS_FILE, index=False)

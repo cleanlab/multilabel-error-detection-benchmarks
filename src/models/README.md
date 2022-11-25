@@ -12,5 +12,3 @@ This package contains the code to train the models used in the benchmark, and to
   - Called with `dvc repro get_avg_accuracy` from the root directory of the repository.
 - [group_stats.py](./group_stats.py) : Summarizes model performance metrics for each group of datasets.
   - Called with `dvc repro group_stats` from the root directory of the repository.
-
-

@@ -48,6 +48,7 @@ COLUMN_MAP = {
 def filter_by_model(df, model_name: str):
     return df[df["Model"] == model_name]
 
+
 def drop_experiments_for_single_dataset_size(
     df: pd.DataFrame,
     groups: list[str] = ["Dataset size"],
@@ -55,20 +56,26 @@ def drop_experiments_for_single_dataset_size(
 ) -> pd.DataFrame:
     # Find unique `col` for each group
     unique_kwargs = df.groupby(groups)[col].unique().apply(set)
-    
+
     # Intersection for `col` that are used for all groups
     common_kwargs = set.intersection(*unique_kwargs)
-    
-    # Select rows with col that are in the intersection  
+
+    # Select rows with col that are in the intersection
     return df[df[col].apply(lambda x: x in common_kwargs)]
 
-def find_best_group_kwargs_by_metric(df, metric: str, group_by: list[str], ):
+
+def find_best_group_kwargs_by_metric(
+    df,
+    metric: str,
+    group_by: list[str],
+):
 
     kwarg_col = "Aggregation method parameters"
-    df_out = df.groupby(group_by+ [kwarg_col])[[metric]].mean()
+    df_out = df.groupby(group_by + [kwarg_col])[[metric]].mean()
     df_out = df_out.groupby(group_by).idxmax(axis=0)
     df_out = df_out.apply(lambda x: x[0], axis=1)
     return df_out
+
 
 def get_plot_df(
     df: pd.DataFrame,
@@ -87,9 +94,10 @@ def get_plot_df(
         )
 
     groups = df.groupby(group_by + ["Aggregation method parameters"]).groups
-    indices = pd.Index(np.concatenate([groups[group] for group in df_model_best_kwargs]))
+    indices = pd.Index(
+        np.concatenate([groups[group] for group in df_model_best_kwargs])
+    )
     plot_df = df_model[df_model.index.isin(indices)]
-
 
     # Save the plotted kwargs in a csv file
     plots_kwargs_df = df_model_best_kwargs.to_frame()
@@ -98,23 +106,24 @@ def get_plot_df(
         lambda x: x[-1]
     )
 
-    plots_kwargs_df.to_csv(IMAGE_DIR / f"{model.lower().replace(' ', '_')}_best_kwargs.csv")
+    plots_kwargs_df.to_csv(
+        IMAGE_DIR / f"{model.lower().replace(' ', '_')}_best_kwargs.csv"
+    )
 
     return plot_df
 
-def get_ema_plot_df(
-    df: pd.DataFrame,
-    model: str,
-    ema_metric: str = "EMA"
-):
+
+def get_ema_plot_df(df: pd.DataFrame, model: str, ema_metric: str = "EMA"):
     df_model = filter_by_model(df, model)
     plot_df = df_model[df_model["Aggregation method"] == ema_metric]
     return plot_df
+
 
 def format_image_filename(model: str, metric: str):
     model_str = model.lower().replace(" ", "_")
     metric_str = metric.lower().replace(" ", "_")
     return f"{model_str}_{metric_str}.pdf"
+
 
 def generate_metric_plots(
     df: pd.DataFrame,
@@ -134,8 +143,13 @@ def generate_metric_plots(
         if legend_title:
             ax.legend(title=legend_title)
 
-        plt.savefig(IMAGE_DIR / (prefix + format_image_filename(model, metric)), bbox_inches='tight', pad_inches=2)
+        plt.savefig(
+            IMAGE_DIR / (prefix + format_image_filename(model, metric)),
+            bbox_inches="tight",
+            pad_inches=2,
+        )
         plt.close()
+
 
 def plot_swarm(
     df: pd.DataFrame,
@@ -146,7 +160,9 @@ def plot_swarm(
     rotation: int = 30,
 ):
     x = group_by[-1]
-    ax = sns.swarmplot(data=df, x=x, y=metric, hue=hue, dodge=True, size=5, legend="full")
+    ax = sns.swarmplot(
+        data=df, x=x, y=metric, hue=hue, dodge=True, size=5, legend="full"
+    )
     plt.setp(ax.get_xticklabels(), rotation=rotation, fontsize=fs)
     plt.setp(ax.get_yticklabels(), fontsize=fs)
 
@@ -155,13 +171,14 @@ def plot_swarm(
     ax.xaxis.label.set_fontsize(20)
     ax.yaxis.label.set_fontsize(20)
     ax.legend(fontsize=fs)
-    
+
     ax.set_xlabel("")
     ax.set_ylabel(metric)
 
     for i in range(df[x].nunique()):
         ax.axvline(i + 0.5, color="gray", c=".5", linestyle="--", linewidth=1)
     return ax
+
 
 def load_data():
     df = pd.read_csv(SCORE_DIR / "results.csv")
@@ -203,26 +220,29 @@ def preprocess_data():
         "weighted_cumulative_average": "Weighted",
     }
 
-
-
     ema_aggregator_kwargs_map = {
         kwargs: ast.literal_eval(kwargs)["alpha"]
         for kwargs in (
-            df[
-                df["Aggregation method"]
-                .str
-                .contains("exponential_moving_average")
-            ]["Aggregation method parameters"]
-        )  
+            df[df["Aggregation method"].str.contains("exponential_moving_average")][
+                "Aggregation method parameters"
+            ]
+        )
     }
-    ema_aggregator_kwargs_map.update({
-        "{'alpha': None}": "2/(K+1)",
-        "{'weights': None}": "weights: exponential decay",
-    })
+    ema_aggregator_kwargs_map.update(
+        {
+            "{'alpha': None}": "2/(K+1)",
+            "{'weights': None}": "weights: exponential decay",
+        }
+    )
 
     # Rename values
     for col, map_dict in zip(
-        ["Dataset size", "Model", "Aggregation method", "Aggregation method parameters"],
+        [
+            "Dataset size",
+            "Model",
+            "Aggregation method",
+            "Aggregation method parameters",
+        ],
         [size_map, model_map, aggregator_map, ema_aggregator_kwargs_map],
     ):
         df[col] = df[col].map(map_dict).fillna(df[col])
@@ -232,9 +252,10 @@ def preprocess_data():
 
 
 def flatten_cols(df):
-    df.columns = ['_'.join(x) for x in df.columns.to_flat_index()]    
+    df.columns = ["_".join(x) for x in df.columns.to_flat_index()]
     df.columns = df.columns.str.rstrip("_")
     return df.reset_index()
+
 
 def save_metrics(df):
     """Aggregate scores and save to metrics file."""
@@ -248,12 +269,26 @@ def save_metrics(df):
         "Spearman Rank Correlation",
     ]
     metrics_df = (
-        df
-        .groupby(["Dataset size", "Model", "Aggregation method", "Aggregation method parameters"])[metrics]
+        df.groupby(
+            [
+                "Dataset size",
+                "Model",
+                "Aggregation method",
+                "Aggregation method parameters",
+            ]
+        )[metrics]
         .agg(["mean", "std"])
         .reset_index()
         .round(5)
-        .sort_values(by=["Dataset size", "Model", "Aggregation method", "Aggregation method parameters"], ascending=[False, True, True, True])
+        .sort_values(
+            by=[
+                "Dataset size",
+                "Model",
+                "Aggregation method",
+                "Aggregation method parameters",
+            ],
+            ascending=[False, True, True, True],
+        )
         .reset_index(drop=True)
         .rename(columns={"mean": "Mean", "std": "Std"})
         .pipe(flatten_cols)
@@ -263,7 +298,7 @@ def save_metrics(df):
 
 
 def main():
-    df = preprocess_data() 
+    df = preprocess_data()
     save_metrics(df)
 
     # Types of models to plot
@@ -271,7 +306,7 @@ def main():
 
     # Metric to chose best set of hyperparameters per aggregation method for plotting
     plot_df_metric = "AP@T"
-    
+
     # Types of metrics to plot
     metrics = [
         "AUPRC",
@@ -291,9 +326,10 @@ def main():
         "simple_moving_average": ("simple_moving_average", "{'k': 2}"),
     }
     for model in models:
-        plot_df = get_plot_df(df, model, plot_df_metric, group_by[1:], manual_kwargs=manual_kwargs)
+        plot_df = get_plot_df(
+            df, model, plot_df_metric, group_by[1:], manual_kwargs=manual_kwargs
+        )
         generate_metric_plots(plot_df, model, metrics, group_by)
-
 
     # Create other swarm plots for exponential moving average with different hues for hyperparameters
     group_by = ["Dataset size"]
@@ -306,7 +342,17 @@ def main():
     ]
     for model in models:
         plot_df = get_ema_plot_df(df, model)
-        generate_metric_plots(plot_df, model, metrics, group_by, hue=hue, prefix="ema_", legend_title="alpha", rotation=0)
+        generate_metric_plots(
+            plot_df,
+            model,
+            metrics,
+            group_by,
+            hue=hue,
+            prefix="ema_",
+            legend_title="alpha",
+            rotation=0,
+        )
+
 
 if __name__ == "__main__":
     main()

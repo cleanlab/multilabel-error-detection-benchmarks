@@ -21,7 +21,9 @@ def run_scorer(dataset_file, pred_probs_file, scorer=SCORER):
 
     experiments = []
     for model_name, pred_probs in pred_probs_dict.items():
-        class_label_quality_scores = scorer.get_class_label_quality_scores(labels=labels, pred_probs=pred_probs)
+        class_label_quality_scores = scorer.get_class_label_quality_scores(
+            labels=labels, pred_probs=pred_probs
+        )
         experiments.append(
             {
                 "dataset": dataset_name,
@@ -30,6 +32,7 @@ def run_scorer(dataset_file, pred_probs_file, scorer=SCORER):
             }
         )
     return experiments
+
 
 def run_all_scorer_experiments():
     dataset_files = list(DATA_DIR.glob("*.pkl"))
@@ -56,9 +59,11 @@ def run_all_scorer_experiments():
     df = pd.DataFrame(all_experiments)
     return df
 
+
 def main():
     df = run_all_scorer_experiments()
     df.to_pickle(SCORE_DIR / "class_scores.pkl")
+
 
 if __name__ == "__main__":
     main()

@@ -1,24 +1,24 @@
 name: run-dvc-pipeline
- 
+
 on: [push]
- 
+
 jobs:
   run:
     runs-on: [ubuntu-latest]
- 
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
- 
+
       - uses: iterative/setup-cml@v1
 
       - uses: iterative/setup-dvc@v1
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10' 
- 
+          python-version: '3.10'
+
       - name: cml
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,5 +33,5 @@ jobs:
 
           echo "## Metrics" >> report.md
           dvc metrics diff main --show-md >> report.md
- 
+
           cml comment create --publish report.md

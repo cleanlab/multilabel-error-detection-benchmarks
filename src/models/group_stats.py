@@ -4,19 +4,35 @@ import pathlib
 
 
 OUTPUT_DIR = pathlib.Path("data/accuracy")
+
+
 def get_group_statistics(df):
     stats_columns = ["Average accuracy", "Jaccard score"]
-    df_group = df.groupby(["dataset_group", "clf", "train_set", "test_set"])[stats_columns].agg(["mean", "std"])
+    df_group = df.groupby(["dataset_group", "clf", "train_set", "test_set"])[
+        stats_columns
+    ].agg(["mean", "std"])
     for column in stats_columns:
-        df_group[column, "std"] = df_group[column, "std"].apply(lambda x: "{:.0e}".format(x)).apply(lambda x: float(x))
+        df_group[column, "std"] = (
+            df_group[column, "std"]
+            .apply(lambda x: "{:.0e}".format(x))
+            .apply(lambda x: float(x))
+        )
         # Keep same number of digits for the mean based on the first significant digit of the std
-        df_group[column, "mean"] = df_group[column, "mean"].apply(lambda x: "{:.{}f}".format(x, len(str(df_group[column, "std"][0]).split(".")[1]))).apply(lambda x: float(x))
+        df_group[column, "mean"] = (
+            df_group[column, "mean"]
+            .apply(
+                lambda x: "{:.{}f}".format(
+                    x, len(str(df_group[column, "std"][0]).split(".")[1])
+                )
+            )
+            .apply(lambda x: float(x))
+        )
 
     return df_group
 
-def get_formatted_group_statistics(df) -> pd.DataFrame:
 
-    def lsd(x, sd:int=1) -> int:
+def get_formatted_group_statistics(df) -> pd.DataFrame:
+    def lsd(x, sd: int = 1) -> int:
         """Returns the number of decimal places to the least significant digit
 
         Negative numbers mean that the least significant digit is to the left of the decimal point.
@@ -34,7 +50,7 @@ def get_formatted_group_statistics(df) -> pd.DataFrame:
         >>> round(0.001634, lsd(0.001634))
         0.002
         """
-        
+
         xl, xr = str(x).split(".")
         if xl == "0":
             # Count the number of zeros after the decimal point
@@ -49,7 +65,7 @@ def get_formatted_group_statistics(df) -> pd.DataFrame:
         std_str = str(round(std, lsd(std)))[-1]
         formatted_string = f"{mean_str}({std_str})"
         return formatted_string
-    
+
     group_columns = ["dataset_group", "clf", "train_set", "test_set"]
     stats_columns = ["Average accuracy", "Jaccard score"]
 
@@ -60,11 +76,15 @@ def get_formatted_group_statistics(df) -> pd.DataFrame:
 if __name__ == "__main__":
     df = pd.read_csv(OUTPUT_DIR / "results.csv")
     df_group_stats = get_group_statistics(df)
-    df_group_stats.columns = [" ".join(col).strip() for col in df_group_stats.columns.values]
+    df_group_stats.columns = [
+        " ".join(col).strip() for col in df_group_stats.columns.values
+    ]
     df_group_stats.to_csv(OUTPUT_DIR / "results_group.csv")
 
     df_group_stats_formatted = get_formatted_group_statistics(df)
-    df_group_stats_formatted.sort_index(ascending=[False, True, True, True], inplace=True)
+    df_group_stats_formatted.sort_index(
+        ascending=[False, True, True, True], inplace=True
+    )
     df_group_stats_formatted.rename(
         index={
             "small": "Small",
@@ -74,9 +94,11 @@ if __name__ == "__main__":
             "True train": "True",
             "True test": "True",
         },
-        inplace=True
+        inplace=True,
     )
-    df_group_stats_formatted.index.set_names(["Datasets", "Classifier", "Train labels", "Test labels"], inplace=True)    
+    df_group_stats_formatted.index.set_names(
+        ["Datasets", "Classifier", "Train labels", "Test labels"], inplace=True
+    )
     df_group_stats_formatted.to_latex(
         OUTPUT_DIR / "results_group.tex",
         column_format="llllcc",

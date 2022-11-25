@@ -11,7 +11,6 @@ import numpy as np
 from tqdm import tqdm
 
 
-
 from cleanlab.internal.util import train_val_split
 import cleanlab.internal.multilabel_scorer as mlscorer
 import sklearn
@@ -22,6 +21,7 @@ from sklearn.ensemble import RandomForestClassifier
 DATA_DIR = pathlib.Path("data/generated")
 OUTPUT_DIR = pathlib.Path("data/pred_probs")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def get_split_generator(labels, cv):
     unique_labels = np.unique(labels, axis=0)
@@ -39,6 +39,7 @@ def train_fold(X, labels, *, clf, pred_probs, cv_train_idx, cv_holdout_idx):
     clf_copy.fit(X_train_cv, s_train_cv)
     pred_probs[cv_holdout_idx] = clf_copy.predict_proba(X_holdout_cv)
 
+
 def get_cross_validated_multilabel_pred_probs(X, labels, *, clf, cv):
     split_generator = get_split_generator(labels, cv)
     pred_probs = np.zeros(shape=labels.shape)
@@ -52,6 +53,7 @@ def get_cross_validated_multilabel_pred_probs(X, labels, *, clf, cv):
             cv_holdout_idx=cv_holdout_idx,
         )
     return pred_probs
+
 
 def get_pred_probs(seed: int, cv_n_folds: int, X, s):
     clf = OneVsRestClassifier(LogisticRegression())
@@ -87,13 +89,29 @@ if __name__ == "__main__":
     for dataset_file in tqdm(dataset_files):
         dataset = pickle.load(open(dataset_file, "rb"))
         # Unpack the dataset
-        X_train, true_labels_train, X_test, true_labels_test, labels, noisy_test_labels, label_errors_mask, test_label_errors_mask, multiple_errors_mask_dict, test_multiple_errors_mask_dict, ps, py, noise_matrix, m, n = [
-            dataset[k] for k in dataset.keys()
-        ]
+        (
+            X_train,
+            true_labels_train,
+            X_test,
+            true_labels_test,
+            labels,
+            noisy_test_labels,
+            label_errors_mask,
+            test_label_errors_mask,
+            multiple_errors_mask_dict,
+            test_multiple_errors_mask_dict,
+            ps,
+            py,
+            noise_matrix,
+            m,
+            n,
+        ) = [dataset[k] for k in dataset.keys()]
 
         pred_probs_dict = {}
-        for clf_name, clf in [("log_reg", clf_log_reg), ("rf", clf_rf)]: 
-            pred_probs = mlscorer.get_cross_validated_multilabel_pred_probs(X_train, labels, clf=clf, cv=kf)
+        for clf_name, clf in [("log_reg", clf_log_reg), ("rf", clf_rf)]:
+            pred_probs = mlscorer.get_cross_validated_multilabel_pred_probs(
+                X_train, labels, clf=clf, cv=kf
+            )
             pred_probs_dict[clf_name] = pred_probs
 
         # Save the predicted probabilities

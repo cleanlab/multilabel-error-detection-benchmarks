@@ -1,10 +1,14 @@
 from typing import Optional
 import numpy as np
 
+
 def _identity(X, **kwargs):
     return X
 
-def softmin_pooling(x: np.ndarray, *, temperature: float = 1.0, axis: int = 1) -> np.ndarray:
+
+def softmin_pooling(
+    x: np.ndarray, *, temperature: float = 1.0, axis: int = 1
+) -> np.ndarray:
     """Softmin score function.
 
     Args:
@@ -15,22 +19,30 @@ def softmin_pooling(x: np.ndarray, *, temperature: float = 1.0, axis: int = 1) -
     Returns:
         Softmin score.
     """
+
     def softmax(scores: np.ndarray) -> np.ndarray:
         """Softmax function."""
         exp_scores = np.exp(scores / temperature)
         return exp_scores / np.sum(exp_scores, axis=axis, keepdims=True)
-    
-    return np.einsum('ij,ij->i', x, softmax(1 - x))
+
+    return np.einsum("ij,ij->i", x, softmax(1 - x))
 
 
 # Pool scores s = (s_1, ..., s_K) by first transforming them to r_i = w_i * log(s_i + eps) + b_i and apply mean pooling to r.
-def log_transform_pooling(s: np.ndarray, *, weights: np.ndarray, biases: np.ndarray, eps: float = 1e-8, axis: int = 1) -> np.ndarray:
+def log_transform_pooling(
+    s: np.ndarray,
+    *,
+    weights: np.ndarray,
+    biases: np.ndarray,
+    eps: float = 1e-8,
+    axis: int = 1
+) -> np.ndarray:
     """Log transform score function.
 
     For a score vector s = (s_1, ..., s_K) with K scores, the function evaluates
     r_i = w_i * log(s_i + eps) + b_i for each i and returns the mean of the
     resulting vector r = (r_1, ..., r_K).
-    
+
 
     Parameters
     ----------
@@ -50,7 +62,7 @@ def log_transform_pooling(s: np.ndarray, *, weights: np.ndarray, biases: np.ndar
     return np.mean(r, axis=axis)
 
 
-def cumulative_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.ndarray: 
+def cumulative_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.ndarray:
     """Cumulative average score function.
 
     For a score vector s = (s_1, ..., s_K) with K scores, the function evaluates
@@ -71,7 +83,7 @@ def cumulative_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.ndarra
     return np.mean(s_sorted[:, :k], axis=axis)
 
 
-def simple_moving_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.ndarray: 
+def simple_moving_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.ndarray:
     """Simple moving average score function.
 
     For a score vector s = (s_1, ..., s_K) with K scores, the function evaluates
@@ -89,27 +101,29 @@ def simple_moving_average(s: np.ndarray, *, k: int = 1, axis: int = 1) -> np.nda
         Simple moving average score.
     """
 
-
     s_sorted = np.sort(s, axis=axis)
     if k == 1:
         return np.mean(s_sorted, axis=axis)
-    
+
     N = s.shape[0]
     K_ma = s.shape[1] - k + 1
     s_ma = np.zeros((N, K_ma))
     s_ma[:, 0] = np.mean(s_sorted[:, :k], axis=axis)
-    for i in range(1,K_ma):
-        prev = s_ma[:, i-1]
-        next_point = s_sorted[:, i+k-1]
-        old_point = s_sorted[:, i-1]
+    for i in range(1, K_ma):
+        prev = s_ma[:, i - 1]
+        next_point = s_sorted[:, i + k - 1]
+        old_point = s_sorted[:, i - 1]
         s_ma[:, i] = prev + (next_point - old_point) / k
 
     return np.mean(s_ma, axis=axis)
 
-def exponential_moving_average(s: np.ndarray, *, alpha: Optional[float] = None, axis: int = 1) -> np.ndarray: 
+
+def exponential_moving_average(
+    s: np.ndarray, *, alpha: Optional[float] = None, axis: int = 1
+) -> np.ndarray:
     """Exponential moving average (EMA) score function.
 
-    For a score vector s = (s_1, ..., s_K) with K scores, the values 
+    For a score vector s = (s_1, ..., s_K) with K scores, the values
     are sorted in *descending* order and the exponential moving average
     of the last score is calculated.
 
@@ -134,7 +148,9 @@ def exponential_moving_average(s: np.ndarray, *, alpha: Optional[float] = None, 
     return s_ema
 
 
-def weighted_cumulative_average(s: np.ndarray, *, weights: Optional[np.ndarray] = None, axis: int = 1) -> np.ndarray:
+def weighted_cumulative_average(
+    s: np.ndarray, *, weights: Optional[np.ndarray] = None, axis: int = 1
+) -> np.ndarray:
     """Weighted cumulative average score function.
 
     For a score vector s = (s_1, ..., s_K) with K scores, the function evaluates
@@ -158,5 +174,5 @@ def weighted_cumulative_average(s: np.ndarray, *, weights: Optional[np.ndarray] 
         weights = np.exp(-np.arange(K))
     means = np.zeros((N, K))
     for i in range(K):
-        means[:, i] = np.mean(s_sorted[:, :(i+1)], axis=axis)
+        means[:, i] = np.mean(s_sorted[:, : (i + 1)], axis=axis)
     return np.sum(weights * means, axis=axis)

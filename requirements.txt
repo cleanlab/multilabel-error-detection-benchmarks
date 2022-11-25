@@ -11,4 +11,5 @@ ipykernel
 matplotlib
 pandas
 plotly
+pre-commit
 seaborn

@@ -1,10 +1,14 @@
 from typing import Optional
-from cleanlab.internal.multilabel_scorer import Aggregator, ClassLabelScorer, MultilabelScorer
+from cleanlab.internal.multilabel_scorer import (
+    Aggregator,
+    ClassLabelScorer,
+    MultilabelScorer,
+)
 import numpy as np
 import pandas as pd
 import pathlib
 import pickle
-from sklearn.metrics import average_precision_score, roc_auc_score 
+from sklearn.metrics import average_precision_score, roc_auc_score
 import yaml
 from scipy import stats
 from tqdm import tqdm
@@ -17,7 +21,7 @@ from src.evaluation.aggregate import (
     exponential_moving_average,
     weighted_cumulative_average,
 )
-from src.evaluation.metrics import average_precision_at_k, lift_at_k 
+from src.evaluation.metrics import average_precision_at_k, lift_at_k
 
 DATA_DIR = pathlib.Path("data/generated")
 PRED_PROBS_DIR = pathlib.Path("data/pred_probs")
@@ -32,7 +36,7 @@ def configure_aggregators(
     alphas: Optional[list] = None,
 ):
     """Configure the aggregators for the MultilabelScorer.
-    
+
     Parameters
     ----------
     K :
@@ -56,8 +60,7 @@ def configure_aggregators(
         alphas = [0.2, 0.4, 0.5, 0.6, 0.8]
 
     numpy_stats = [
-        Aggregator(method) 
-        for method in [np.mean, np.median, np.min, np.max]
+        Aggregator(method) for method in [np.mean, np.median, np.min, np.max]
     ]
 
     softmin_temperatures = [
@@ -71,25 +74,21 @@ def configure_aggregators(
         for biases in [0]
     ]
 
-    cumulative_average_ks = [
-        Aggregator(cumulative_average, k=k) for k in ks
-        if k <= K
-    ]
+    cumulative_average_ks = [Aggregator(cumulative_average, k=k) for k in ks if k <= K]
 
     simple_moving_average_ks = [
-        Aggregator(simple_moving_average, k=k) for k in ks
-        if k <= K
+        Aggregator(simple_moving_average, k=k) for k in ks if k <= K
     ]
 
     exponential_moving_average_alphas = [
         Aggregator(exponential_moving_average, alpha=alpha)
         for alpha in [None, *alphas]
-        if alpha is not None or 2/(K + 1) not in alphas
+        if alpha is not None or 2 / (K + 1) not in alphas
     ]
 
     weighted_cumulative_average_weights = [
         Aggregator(weighted_cumulative_average, weights=weights)
-        for weights in [None, 1/K]
+        for weights in [None, 1 / K]
     ]
 
     aggregators = [
@@ -104,7 +103,14 @@ def configure_aggregators(
 
     return aggregators
 
-def run_experiments(dataset_file, pred_probs_file, *, class_score_df: pd.DataFrame, aggregator_params: dict):
+
+def run_experiments(
+    dataset_file,
+    pred_probs_file,
+    *,
+    class_score_df: pd.DataFrame,
+    aggregator_params: dict,
+):
     """Configure MultilabelScorer with."""
 
     dataset = pickle.load(open(dataset_file, "rb"))
@@ -114,7 +120,7 @@ def run_experiments(dataset_file, pred_probs_file, *, class_score_df: pd.DataFra
     multiple_errors_mask_dict = dataset["multiple_errors_mask_dict"]
     two_label_errors_mask = multiple_errors_mask_dict[1]
     three_label_errors_mask = multiple_errors_mask_dict[2]
-    
+
     num_examples, num_classes = labels.shape
     num_errors = np.sum(label_errors_mask)
     num_errors_per_example = np.sum(dataset["true_labels_train"] != labels, axis=1)
@@ -122,7 +128,7 @@ def run_experiments(dataset_file, pred_probs_file, *, class_score_df: pd.DataFra
     num_three_label_errors = np.sum(three_label_errors_mask)
     num_unique_labels = dataset["m"]
     pred_probs_dict = pickle.load(open(pred_probs_file, "rb"))
-    
+
     K = labels.shape[1]
     aggregators = configure_aggregators(K, **aggregator_params)
 
@@ -130,13 +136,17 @@ def run_experiments(dataset_file, pred_probs_file, *, class_score_df: pd.DataFra
     # Using a `my_aggregator: Aggregator`` directly should give the same results as using
     # MultilabelScorer(..., aggregator=my_aggregator).aggregate.
     scorers = [
-        MultilabelScorer(base_scorer=ClassLabelScorer.SELF_CONFIDENCE, aggregator=aggregator)
+        MultilabelScorer(
+            base_scorer=ClassLabelScorer.SELF_CONFIDENCE, aggregator=aggregator
+        )
         for aggregator in aggregators
     ]
 
     experiments = []
     for exp_id, scorer in tqdm(enumerate(scorers)):
-        for (model_name, class_label_quality_scores) in class_score_df[class_score_df["dataset"] == dataset_file.stem][["model_name", "class_label_quality_scores"]].values:
+        for (model_name, class_label_quality_scores) in class_score_df[
+            class_score_df["dataset"] == dataset_file.stem
+        ][["model_name", "class_label_quality_scores"]].values:
 
             scores = scorer.aggregate(class_label_quality_scores)
             experiment = {
@@ -153,9 +163,11 @@ def run_experiments(dataset_file, pred_probs_file, *, class_score_df: pd.DataFra
                 "three_label_errors_mask": three_label_errors_mask,
                 "num_three_label_errors": num_three_label_errors,
                 "class_label_scorer": scorer.base_scorer.name,
-                "aggregator": scorer.aggregator.method.func.__name__ if hasattr(scorer.aggregator.method, "func") else scorer.aggregator.method.__qualname__,
+                "aggregator": scorer.aggregator.method.func.__name__
+                if hasattr(scorer.aggregator.method, "func")
+                else scorer.aggregator.method.__qualname__,
                 "aggregator_kwargs": str(
-                    scorer.aggregator.kwargs 
+                    scorer.aggregator.kwargs
                     if hasattr(scorer.aggregator, "kwargs")
                     else {}
                 ),
@@ -177,22 +189,27 @@ def run_experiments(dataset_file, pred_probs_file, *, class_score_df: pd.DataFra
             #     )
 
             spearman = stats.spearmanr(inv_scores, num_errors_per_example)[0]
-            experiment.update({
-                "spearman": spearman,                
-            })        
+            experiment.update(
+                {
+                    "spearman": spearman,
+                }
+            )
             experiments.append(experiment)
     return experiments
 
-def update_experiment_metrics(experiment: dict, scores:np.ndarray, mask: np.ndarray, suffix: str, k: int) -> None:
+
+def update_experiment_metrics(
+    experiment: dict, scores: np.ndarray, mask: np.ndarray, suffix: str, k: int
+) -> None:
     if len(suffix) > 0:
-        assert suffix.startswith("_"), "suffix must start with an underscore to be appended to metric names"
+        assert suffix.startswith(
+            "_"
+        ), "suffix must start with an underscore to be appended to metric names"
 
     metrics_dict = compute_ranking_metrics(scores, mask, k)
 
-    experiment.update({
-        f"{key}{suffix}": value
-        for key, value in metrics_dict.items()
-    })
+    experiment.update({f"{key}{suffix}": value for key, value in metrics_dict.items()})
+
 
 def compute_ranking_metrics(scores, mask, k) -> dict:
     """Compute ranking metrics for a set of scores and a mask of errors.
@@ -201,15 +218,17 @@ def compute_ranking_metrics(scores, mask, k) -> dict:
     ----------
     scores : np.ndarray
         Array of multilabel quality scores.
-    
+
     mask : np.ndarray
         Array of boolean values indicating whether a given example has a label error.
-    
+
     k : int
         @k value for computing lift and AP metrics.
     """
     assert scores.shape == mask.shape, "scores and mask must have the same shape"
-    assert k <= scores.shape[0], "k must be less than or equal to the number of examples"
+    assert (
+        k <= scores.shape[0]
+    ), "k must be less than or equal to the number of examples"
     metrics_dict = {
         "auroc": roc_auc_score(mask, scores),
         "lift_at_100": lift_at_k(mask, scores, k=100),
@@ -219,6 +238,7 @@ def compute_ranking_metrics(scores, mask, k) -> dict:
         "ap_at_num_errors": average_precision_at_k(mask, scores, k=k),
     }
     return metrics_dict
+
 
 def run_all_experiments(*, class_score_df: pd.DataFrame, aggregator_params: dict):
 
@@ -245,7 +265,6 @@ def run_all_experiments(*, class_score_df: pd.DataFrame, aggregator_params: dict
         )
         all_experiments += experiments
 
-
     df = pd.DataFrame(all_experiments)
     return df
 
@@ -257,7 +276,9 @@ def main():
     aggregator_params = all_params["eval"]
     class_score_df = pd.read_pickle(SCORE_DIR / "class_scores.pkl")
 
-    df = run_all_experiments(class_score_df=class_score_df, aggregator_params=aggregator_params)
+    df = run_all_experiments(
+        class_score_df=class_score_df, aggregator_params=aggregator_params
+    )
 
     # Save the results to the score directory
     # Ensure the directory exists
@@ -267,7 +288,7 @@ def main():
     # # Group by the aggregator/kwargs
     # df_grouped = df.groupby(["aggregator", "aggregator_kwargs"])
 
-    # # Aggregate the mean and std of the metrics 
+    # # Aggregate the mean and std of the metrics
     # metrics_cols = ["auroc",  "lift_at_100",  "lift_at_num_errors", "auprc",  "ap_at_100",  "ap_at_num_errors"]
     # df_agg = df_grouped[metrics_cols].agg(["mean"])
 
