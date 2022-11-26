@@ -1,6 +1,6 @@
 name: run-dvc-pipeline
 
-on: [push]
+on: [workflow_dispatch]
 
 jobs:
   run:
