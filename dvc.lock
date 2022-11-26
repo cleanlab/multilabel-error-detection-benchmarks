@@ -209,8 +209,8 @@ stages:
     cmd: python src/models/configure_train.py
     deps:
     - path: src/models/configure_train.py
-      md5: 1dbe3095ce904e0781ed06e7baed62c2
-      size: 1932
+      md5: 5f763abbfcee2a6263357473e6ff05c0
+      size: 1950
     params:
       params.yaml:
         train:
