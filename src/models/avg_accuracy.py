@@ -118,8 +118,6 @@ def unpack_dataset(dataset):
         X_test,
         noisy_test_labels,
         true_labels_test,
-        label_errors_mask,
-        test_label_errors_mask,
     ) = [
         dataset["X_train"],
         dataset["labels"],
@@ -127,8 +125,6 @@ def unpack_dataset(dataset):
         dataset["X_test"],
         dataset["noisy_test_labels"],
         dataset["true_labels_test"],
-        dataset["label_errors_mask"],
-        dataset["test_label_errors_mask"],
     ]
     return (
         X_train,

@@ -4,8 +4,8 @@ stages:
     cmd: python src/data/make_dataset.py
     deps:
     - path: src/data/make_dataset.py
-      md5: 9d0e0a78b123e260ad6e55461a83497d
-      size: 10530
+      md5: 1949ec9e6a5e6c1da1d20c57bc16abd2
+      size: 11031
     params:
       params.yaml:
         dataset_kwargs:
@@ -59,8 +59,8 @@ stages:
       size: 371398436
       nfiles: 20
     - path: src/models/train.py
-      md5: 0ac3e2a1ae2cb87872d040343d77a7ca
-      size: 3632
+      md5: a7ba9253d6de9a542195e9252b39c1df
+      size: 3834
     params:
       params.yaml:
         train:
@@ -75,8 +75,8 @@ stages:
     cmd: python src/data/plot_avg_trace.py
     deps:
     - path: src/data/plot_avg_trace.py
-      md5: 01dc511cf252de6b06535845d459bb5a
-      size: 1650
+      md5: 28ecfb27a7ba4e691e5e98753acf7562
+      size: 1659
     params:
       params.yaml:
         dataset_kwargs.small.gamma:
@@ -84,7 +84,7 @@ stages:
           scale: 0.01
     outs:
     - path: data/images/avg_trace.svg
-      md5: f210c12bcaf6f2b786799a2cb9640cda
+      md5: 321e24781d590febed9c294668b7775e
       size: 25806
   get_avg_accuracy:
     cmd: python src/models/avg_accuracy.py
@@ -94,8 +94,8 @@ stages:
       size: 371398436
       nfiles: 20
     - path: src/models/avg_accuracy.py
-      md5: d5251951297158907a148283b2dc5e40
-      size: 5715
+      md5: 0a76caff7f26f8bcb15293a43bc37224
+      size: 6196
     outs:
     - path: data/accuracy/results.csv
       md5: ff5d7521e7fcaab144468fa46f3773cd
@@ -107,8 +107,8 @@ stages:
       md5: ff5d7521e7fcaab144468fa46f3773cd
       size: 18703
     - path: src/models/group_stats.py
-      md5: fe35583e9d0b91a70818a7c141c9776a
-      size: 3135
+      md5: a41bc38c3179cfd5a3104ee5bace5293
+      size: 3349
     outs:
     - path: data/accuracy/results_group.csv
       md5: e699f732148816ca2cd18d880ff87402
@@ -124,8 +124,8 @@ stages:
       size: 243204520
       nfiles: 20
     - path: src/evaluation/class_score.py
-      md5: c72dab62c4630e05cfd7d6858b0e64b0
-      size: 2089
+      md5: c14257a9297816d1ab4596550dd76328
+      size: 2115
     outs:
     - path: data/scores/class_scores.pkl
       md5: bf9d1dc371e3023bb333a4193c76cdc9
@@ -137,11 +137,11 @@ stages:
       md5: bf9d1dc371e3023bb333a4193c76cdc9
       size: 243202989
     - path: src/evaluation/aggregate.py
-      md5: e632651e89dd55c312131e6c9b67d345
-      size: 5013
+      md5: d0be69d6b7e45c1baea0cf6ba5dec0c2
+      size: 4909
     - path: src/evaluation/score.py
-      md5: d5195bcebb11cd12fbae6aafc2232f41
-      size: 10296
+      md5: 68e37e7a3722b57cefd8a9c974d736ba
+      size: 8329
     params:
       params.yaml:
         eval:
@@ -172,34 +172,34 @@ stages:
           - 0.95
     outs:
     - path: data/scores/scores.pkl
-      md5: 1f68763c514dceedf7daa55a61234100
-      size: 201235716
+      md5: 947cffb97ab55bfd7846b388618225c7
+      size: 201235788
   rank_metrics:
     cmd: python src/evaluation/eval_ranking_metrics.py
     deps:
     - path: data/scores/scores.pkl
-      md5: 1f68763c514dceedf7daa55a61234100
-      size: 201235716
+      md5: 947cffb97ab55bfd7846b388618225c7
+      size: 201235788
     - path: src/evaluation/eval_ranking_metrics.py
-      md5: 913d5dd7d146ed39c807d9f95f990919
-      size: 4058
+      md5: e2762d8558021bf3ba6d3b40eac4158f
+      size: 2917
     outs:
     - path: data/scores/results.csv
-      md5: 3a47032264c8e64c8f158516224f13c6
+      md5: bbf2f9289212408eed865ff6ecfc32f5
       size: 578090
   plot_metrics:
     cmd: python src/evaluation/plot_metrics.py
     deps:
     - path: data/scores/results.csv
-      md5: 3a47032264c8e64c8f158516224f13c6
+      md5: bbf2f9289212408eed865ff6ecfc32f5
       size: 578090
     - path: src/evaluation/plot_metrics.py
-      md5: bd72eb1bb930bc77b7ba59130f0fff75
-      size: 9667
+      md5: 8be1e636b365caabdf55ba927232a005
+      size: 10095
     outs:
     - path: data/images/scores/
-      md5: 4bdee1ce58352b8fcf79f8c3d426aaf1.dir
-      size: 417631
+      md5: 36d731319e460253b81f8444e087759f.dir
+      size: 417895
       nfiles: 20
     - path: data/scores/metrics.csv
       md5: 57840cf45a1d81004e742d3e2bd261e4

@@ -24,7 +24,6 @@ from src.evaluation.aggregate import (
 from src.evaluation.metrics import average_precision_at_k, lift_at_k
 
 DATA_DIR = pathlib.Path("data/generated")
-PRED_PROBS_DIR = pathlib.Path("data/pred_probs")
 SCORE_DIR = pathlib.Path("data/scores")
 
 
@@ -106,7 +105,6 @@ def configure_aggregators(
 
 def run_experiments(
     dataset_file,
-    pred_probs_file,
     *,
     class_score_df: pd.DataFrame,
     aggregator_params: dict,
@@ -127,7 +125,6 @@ def run_experiments(
     num_two_label_errors = np.sum(two_label_errors_mask)
     num_three_label_errors = np.sum(three_label_errors_mask)
     num_unique_labels = dataset["m"]
-    pred_probs_dict = pickle.load(open(pred_probs_file, "rb"))
 
     K = labels.shape[1]
     aggregators = configure_aggregators(K, **aggregator_params)
@@ -174,19 +171,6 @@ def run_experiments(
                 "scores": scores,
             }
             inv_scores = 1 - scores
-            # for mask_name_suffix, mask, k in zip(
-            #     ["", "_two", "_three"],
-            #     [label_errors_mask, two_label_errors_mask, three_label_errors_mask],
-            #     [num_errors, num_two_label_errors, num_three_label_errors],
-
-            # ):
-            #     update_experiment_metrics(
-            #         experiment=experiment,
-            #         scores=inv_scores,
-            #         mask=mask,
-            #         suffix=mask_name_suffix,
-            #         k=k
-            #     )
 
             spearman = stats.spearmanr(inv_scores, num_errors_per_example)[0]
             experiment.update(
@@ -243,23 +227,11 @@ def compute_ranking_metrics(scores, mask, k) -> dict:
 def run_all_experiments(*, class_score_df: pd.DataFrame, aggregator_params: dict):
 
     dataset_files = list(DATA_DIR.glob("*.pkl"))
-    pred_probs_files = list(PRED_PROBS_DIR.glob("*.pkl"))
-
-    # Pair up the datasets and pred_probs
-    dataset_pred_probs_pairs = []
-    for dataset_file in dataset_files:
-        dataset_name = dataset_file.stem
-        for pred_probs_file in pred_probs_files:
-            if pred_probs_file.stem == dataset_name:
-                dataset_pred_probs_pairs.append((dataset_file, pred_probs_file))
-
-    dataset_pred_probs_pairs.sort(key=lambda x: x[0].stem)
 
     all_experiments = []
-    for dataset_file, pred_probs_file in tqdm(dataset_pred_probs_pairs):
+    for dataset_file in tqdm(dataset_files):
         experiments = run_experiments(
             dataset_file,
-            pred_probs_file,
             class_score_df=class_score_df,
             aggregator_params=aggregator_params,
         )
@@ -284,29 +256,6 @@ def main():
     # Ensure the directory exists
     SCORE_DIR.mkdir(parents=True, exist_ok=True)
     df.to_pickle(SCORE_DIR / "scores.pkl")
-
-    # # Group by the aggregator/kwargs
-    # df_grouped = df.groupby(["aggregator", "aggregator_kwargs"])
-
-    # # Aggregate the mean and std of the metrics
-    # metrics_cols = ["auroc",  "lift_at_100",  "lift_at_num_errors", "auprc",  "ap_at_100",  "ap_at_num_errors"]
-    # df_agg = df_grouped[metrics_cols].agg(["mean"])
-
-    # # Save the aggregated results to the score directory
-    # results = defaultdict(lambda: defaultdict(dict))
-
-    # for idx, *values in df_agg.itertuples():
-    #     for v in values:
-    #         for i, k in enumerate(idx):
-    #             if i == 0:
-    #                 nested = results[k]
-    #             elif i == len(idx) - 1:
-    #                 nested[k] = v
-    #             else:
-    #                 nested = nested[k]
-    # df_agg.index = df_agg.index.map(lambda x: x[0] + x[1])
-
-    # df_agg.to_json(SCORE_DIR / "results_agg.json", indent=4)
 
 
 if __name__ == "__main__":

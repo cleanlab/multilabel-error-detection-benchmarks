@@ -304,7 +304,7 @@ def main():
     # Types of models to plot
     models = ["Logistic Regression", "Random Forest"]
 
-    # Metric to chose best set of hyperparameters per aggregation method for plotting
+    # Metric to choose best set of hyperparameters per aggregation method for plotting
     plot_df_metric = "AP@T"
 
     # Types of metrics to plot
@@ -331,7 +331,7 @@ def main():
         )
         generate_metric_plots(plot_df, model, metrics, group_by)
 
-    # Create other swarm plots for exponential moving average with different hues for hyperparameters
+    # Create swarm plots for EMA with different hues for hyperparameters
     group_by = ["Dataset size"]
     hue = "Aggregation method parameters"
     metrics = [

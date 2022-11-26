@@ -28,7 +28,6 @@ def softmin_pooling(
     return np.einsum("ij,ij->i", x, softmax(1 - x))
 
 
-# Pool scores s = (s_1, ..., s_K) by first transforming them to r_i = w_i * log(s_i + eps) + b_i and apply mean pooling to r.
 def log_transform_pooling(
     s: np.ndarray,
     *,
@@ -140,7 +139,7 @@ def exponential_moving_average(
     s_sorted = np.sort(s, axis=axis)[:, ::-1]
     _, K = s.shape
     if alpha is None:
-        # One conventional choice for alpha is 2/(K +1), where K is the number of periods in the moving average.
+        # Common choice, to have the K smallest scores to have ~86.5% of the total weight.
         alpha = float(2 / (K + 1))
     s_ema = s_sorted[:, 0]
     for i in range(1, K):

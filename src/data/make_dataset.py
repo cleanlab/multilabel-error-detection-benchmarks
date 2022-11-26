@@ -41,7 +41,9 @@ def generate_noisy_dataset(
     test_size,
     seed,
 ):
-    """Generate toy dataset and add noise to the labels based on the label distribution in the training split."""
+    """Generate toy dataset and add noise to the labels
+    based on the label distribution in the training split.
+    """
     X, y, *_ = make_multilabel_classification(
         n_samples=n_samples,
         n_features=n_features,
@@ -97,7 +99,7 @@ def generate_noisy_dataset(
         unique_noisy_labels = np.unique(
             np.concatenate(
                 [
-                    unique_labels,  # Rare true labels could get removed, you wouldn't see them in practice
+                    unique_labels,  # Rare true labels could get removed, never seen in practice
                     y_train_noisy,  # Rare noisy labels could get generated
                     y_test_noisy,  # Test-specific noisy labels could get generated
                 ],
@@ -255,8 +257,7 @@ def plot_dataset(*, dataset):
     label_error_rates = np.sum(label_error_rates, axis=1) / true_labels_train.shape[1]
     mean_label_error_rate = np.mean(label_error_rates)
 
-    # First plot the noisy labels with c=[label_to_index[tuple(label)] for label in labels]
-    # Title: "Features with label noise"
+    # Plot the noisy labels
     ax[0].scatter(
         X[:, x_axis], X[:, y_axis], c=[label_to_index[tuple(label)] for label in labels]
     )
@@ -268,7 +269,7 @@ def plot_dataset(*, dataset):
     )
     ax[0].set_title("Features with label noise")
 
-    # Second plot the true labels with c=[label_to_index[tuple(label)] for label in true_labels_train]
+    # Plot the true labels
     ax[1].scatter(
         X[:, x_axis],
         X[:, y_axis],
@@ -278,7 +279,7 @@ def plot_dataset(*, dataset):
 
     overall_label_error_rate = np.any(true_labels_train != labels, axis=1).mean()
     # Get overall label error rate
-    # Third plot the label error mask with c=label_errors_mask
+    # Plot the label error mask
     ax[2].scatter(X[:, x_axis], X[:, y_axis], c=label_errors_mask)
     # Annotated with the overall label error rate
     ax[2].annotate(
