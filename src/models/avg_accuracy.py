@@ -35,9 +35,6 @@ def train_on_dataset(
     X_test,
     noisy_test_labels,
     true_labels_test,
-    label_to_id,
-    labels_idx,
-    true_labels_train_idx,
     noisy_test_labels_idx,
     true_labels_test_idx,
 ):
@@ -86,27 +83,12 @@ def train_on_dataset(
 
 
 def preprocess_labels(labels, true_labels_train, noisy_test_labels, true_labels_test):
-    combined_labels = np.concatenate(
-        [labels, true_labels_train, noisy_test_labels, true_labels_test], axis=0
-    )
-    unique_labels = np.unique(combined_labels, axis=0)
+    labelsets = [labels, true_labels_train, noisy_test_labels, true_labels_test]
+    unique_labels = np.unique(np.concatenate(labelsets, axis=0), axis=0)
     label_to_id = {tuple(label): i for i, label in enumerate(unique_labels)}
-    labels_idx = np.array([label_to_id[tuple(label)] for label in labels])
-    true_labels_train_idx = np.array(
-        [label_to_id[tuple(label)] for label in true_labels_train]
-    )
-    noisy_test_labels_idx = np.array(
-        [label_to_id[tuple(label)] for label in noisy_test_labels]
-    )
-    true_labels_test_idx = np.array(
-        [label_to_id[tuple(label)] for label in true_labels_test]
-    )
     return (
-        label_to_id,
-        labels_idx,
-        true_labels_train_idx,
-        noisy_test_labels_idx,
-        true_labels_test_idx,
+        np.array([label_to_id[tuple(label)] for label in labels_])
+        for labels_ in labelsets
     )
 
 
@@ -178,15 +160,9 @@ if __name__ == "__main__":
             true_labels_test,
         ) = unpack_dataset(dataset)
 
-        (
-            label_to_id,
-            labels_idx,
-            true_labels_train_idx,
-            noisy_test_labels_idx,
-            true_labels_test_idx,
-        ) = preprocess_labels(
+        (noisy_test_labels_idx, true_labels_test_idx) = preprocess_labels(
             labels, true_labels_train, noisy_test_labels, true_labels_test
-        )
+        )[2:]
         # Add dataset/group to df
         df = train_on_dataset(
             clf_log_reg,
@@ -199,9 +175,6 @@ if __name__ == "__main__":
             X_test,
             noisy_test_labels,
             true_labels_test,
-            label_to_id,
-            labels_idx,
-            true_labels_train_idx,
             noisy_test_labels_idx,
             true_labels_test_idx,
         )

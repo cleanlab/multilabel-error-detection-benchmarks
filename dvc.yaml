@@ -9,6 +9,16 @@ stages:
     - seeds
     outs:
     - data/generated
+  configure_train:
+    desc: Configure the model training pipeline.
+    cmd: python src/models/configure_train.py
+    deps:
+    - src/models/configure_train.py
+    params:
+    - train
+    outs:
+    - ${train.clf_dict}
+    - ${train.cross_validator}
   train:
     desc: Train models and get out-of-sample predicted probabilities on the training
       sets.
@@ -16,8 +26,8 @@ stages:
     deps:
     - data/generated/
     - src/models/train.py
-    params:
-    - train
+    - ${train.clf_dict}
+    - ${train.cross_validator}
     outs:
     - data/pred_probs/
   plot_avg_trace:

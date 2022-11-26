@@ -58,14 +58,15 @@ stages:
       md5: 3a44a541a0b9437d6e18334f6abc8db2.dir
       size: 371398436
       nfiles: 20
+    - path: models/clf_dict.pkl
+      md5: 46a9c1acf147e46f88291d8cc840ac12
+      size: 997
+    - path: models/cross_validator.pkl
+      md5: 74bcfcac5b426c9204efa15edc85f691
+      size: 114
     - path: src/models/train.py
-      md5: a7ba9253d6de9a542195e9252b39c1df
-      size: 3834
-    params:
-      params.yaml:
-        train:
-          cv_n_folds: 5
-          seed: 0
+      md5: d5dba9f8dd151242a98eb918e97f440a
+      size: 2426
     outs:
     - path: data/pred_probs/
       md5: 517a874bad8def2607eb8cdaad288169.dir
@@ -94,8 +95,8 @@ stages:
       size: 371398436
       nfiles: 20
     - path: src/models/avg_accuracy.py
-      md5: 0a76caff7f26f8bcb15293a43bc37224
-      size: 6196
+      md5: 44d66dd5af35ba2c62d79e9c9a3a6048
+      size: 5472
     outs:
     - path: data/accuracy/results.csv
       md5: ff5d7521e7fcaab144468fa46f3773cd
@@ -137,8 +138,8 @@ stages:
       md5: bf9d1dc371e3023bb333a4193c76cdc9
       size: 243202989
     - path: src/evaluation/aggregate.py
-      md5: d0be69d6b7e45c1baea0cf6ba5dec0c2
-      size: 4909
+      md5: e5e4152ed54ecb52044971db5c14a325
+      size: 4866
     - path: src/evaluation/score.py
       md5: 68e37e7a3722b57cefd8a9c974d736ba
       size: 8329
@@ -204,3 +205,23 @@ stages:
     - path: data/scores/metrics.csv
       md5: 57840cf45a1d81004e742d3e2bd261e4
       size: 15657
+  configure_train:
+    cmd: python src/models/configure_train.py
+    deps:
+    - path: src/models/configure_train.py
+      md5: 1dbe3095ce904e0781ed06e7baed62c2
+      size: 1932
+    params:
+      params.yaml:
+        train:
+          cv_n_folds: 5
+          seed: 0
+          clf_dict: models/clf_dict.pkl
+          cross_validator: models/cross_validator.pkl
+    outs:
+    - path: models/clf_dict.pkl
+      md5: 46a9c1acf147e46f88291d8cc840ac12
+      size: 997
+    - path: models/cross_validator.pkl
+      md5: 74bcfcac5b426c9204efa15edc85f691
+      size: 114

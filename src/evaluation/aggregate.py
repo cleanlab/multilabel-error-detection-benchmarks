@@ -2,10 +2,6 @@ from typing import Optional
 import numpy as np
 
 
-def _identity(X, **kwargs):
-    return X
-
-
 def softmin_pooling(
     x: np.ndarray, *, temperature: float = 1.0, axis: int = 1
 ) -> np.ndarray:

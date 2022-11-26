@@ -43,6 +43,8 @@ dataset_kwargs:
 train:
   cv_n_folds: 5
   seed: 0
+  clf_dict: models/clf_dict.pkl
+  cross_validator: models/cross_validator.pkl
 
 eval:
   ks:
