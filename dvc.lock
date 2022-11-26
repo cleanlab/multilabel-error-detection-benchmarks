@@ -65,8 +65,8 @@ stages:
       md5: 74bcfcac5b426c9204efa15edc85f691
       size: 114
     - path: src/models/train.py
-      md5: d5dba9f8dd151242a98eb918e97f440a
-      size: 2426
+      md5: b9a7897ed7bb31f2cf9d2f6181762f19
+      size: 2490
     outs:
     - path: data/pred_probs/
       md5: 517a874bad8def2607eb8cdaad288169.dir
