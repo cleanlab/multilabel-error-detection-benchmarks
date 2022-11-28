@@ -1,8 +1,12 @@
 # Benchmarking label error detection algorithms for multi-label classification
 
-A DVC project for running benchmarks on the quality of label scores for multi-label classification with synthetic data.
+Code to reproduce results from the paper:
 
-## Instructions
+[**Identifying Incorrect Annotations in Multi-Label Classification Data**](https://arxiv.org/abs/2211.13895)
+
+This package is a DVC project that uses various datasets to evaluate different label quality scores for detecting annotation errors in multi-label classification.
+
+## Instructions to get started
 
 1. Clone the repo
 2a [*Optional*]. Open the repo in a devcontainer
@@ -85,7 +89,7 @@ dvc repro
 4. Inspect the synthetic datasets in the `notebooks/inspect_generated_data.ipynb` notebook.
 5. Inspect the results in the `notebooks/inspect_score_results.ipynb` notebook.
 
-## Aggregator methods
+## Aggregation methods to pool scores
 
 Along with the typical `np.mean`, `np.median`, `np.min`, `np.max` aggregators, we also implement several methods found in `src/evaluation/aggregate.py`:
 
