@@ -99,3 +99,10 @@ Along with the typical `np.mean`, `np.median`, `np.min`, `np.max` aggregators, w
 - `simple_moving_average`
 - `exponential_moving_average`
 - `weighted_cumulative_average`
+
+## CelebA analysis
+
+See the [Examples Notebooks](https://github.com/cleanlab/examples/tree/master/multilabel_classification) in our [examples](https://github.com/cleanlab/examples/) repository for:
+
+- the Pytorch code we used to train a multi-label classifier model on CelebA
+- the code to find mislabeled images in this dataset
