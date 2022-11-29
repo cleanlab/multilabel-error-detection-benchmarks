@@ -108,3 +108,5 @@ See the [Examples Notebooks](https://github.com/cleanlab/examples/tree/master/mu
 
 - the Pytorch code we used to train a multi-label classifier model on CelebA
 - the code to find mislabeled images in this dataset
+
+**data/celeba/celeba_label_errors.csv** in this repository contains: label quality scores for each image in the CelebA dataset and boolean is_issue column that indicates which images were identified to have a label issue by cleanlab
