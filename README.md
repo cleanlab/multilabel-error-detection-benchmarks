@@ -89,7 +89,7 @@ dvc repro
 4. Inspect the synthetic datasets in the `notebooks/inspect_generated_data.ipynb` notebook.
 5. Inspect the results in the `notebooks/inspect_score_results.ipynb` notebook.
 
-## Aggregation methods to pool scores
+## Aggregation methods to pool per-class annotation scores into an overall label quality score for each example
 
 Along with the typical `np.mean`, `np.median`, `np.min`, `np.max` aggregators, we also implement several methods found in `src/evaluation/aggregate.py`:
 
