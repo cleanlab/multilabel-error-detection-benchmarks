@@ -4,7 +4,7 @@ Code to reproduce results from the paper:
 
 [**Identifying Incorrect Annotations in Multi-Label Classification Data**](https://arxiv.org/abs/2211.13895)
 
-This package is a DVC project that uses various datasets to evaluate different label quality scores for detecting annotation errors in multi-label classification. This repository is only for intended for scientific purposes. 
+This package is a DVC project that uses various datasets to evaluate different label quality scores for detecting annotation errors in multi-label classification. This repository is only intended for scientific purposes. 
 To find label issues your own multi-label data, you should instead use [the implementation](https://docs.cleanlab.ai/stable/tutorials/multilabel_classification.html) from the official [cleanlab](https://github.com/cleanlab/cleanlab) library.
 
 
